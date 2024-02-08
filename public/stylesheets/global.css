@@ -1,0 +1,35 @@
+@font-face {
+    font-family: "roboto";
+    src: url("/public/assets/roboto-fonts/Roboto-Regular.woff2") format("woff2");
+}
+
+@font-face {
+    font-family: "roboto-medium";
+    src: url("/public/assets/roboto-fonts/Roboto-Medium.woff2") format("woff2");
+}
+
+:root {
+    --color-primary: #2d6074;
+    --color-secondary: #2a9d8f;
+    --color-third: #e9c46a;
+    --color-fourth: #f4a261;
+    --color-fifth: #e76f51;
+    --font-fam: "Lato", sans-serif;
+    --debug-1: #aa0000;
+    --debug-2: #a0e000;
+    --debug-3: #a0e0e0;
+    --debug-4: #af0aff;
+    --debug-5: #ff00ff;
+    --debug-6: #ffff00;
+}
+
+body {
+    font-family: "Courier New", Courier, monospace;
+    font-size: 1rem;
+    color: #212529;
+    background-color: #eff0f5;
+}
+
+html {
+    font-size: 20px;
+}

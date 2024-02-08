@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Swift-Send</title>
+
+        <link rel="stylesheet" href="/public/stylesheets/reset.css" />
+        <link rel="stylesheet" href="/public/stylesheets/global.css" />
+        <link rel="stylesheet" href="/public/stylesheets/catalog_product.css" />
+        <link rel="stylesheet" href="/public/stylesheets/navbar.css" />
+
+        <script src="/public/javascripts/index.js" defer></script>
+    </head>
+    <body>
+        <header class="navbar">
+            <a class="navbar__logo" href="/"><img src="/public/images/logo.svg" alt="logo" /></a>
+            <div class="navbar__search-container">
+                <div class="navbar__category-container">
+                    <select class="navbar__category">
+                        <option value="All">All</option>
+                        <option value="category1">Category 1</option>
+                        <option value="category2">Category 2</option>
+                    </select>
+                </div>
+
+                <input class="navbar__search" type="text" placeholder="Search" />
+                <button class="navbar__search-btn js-search-btn"></button>
+            </div>
+            <button class="navbar__link navbar__link--special js-fetch-btn">Fetch</button>
+            <button class="navbar__link js-add-btn">Add</button>
+            <!-- <button class="navbar__link btn--delete js-delete-btn">Delete</button>
+            <button class="navbar__link js-search-btn">Search</button> -->
+        </header>
+
+        <div class="product-card-container js-card-container">
+            <div class="product-card">
+                <a href="" class="product-card__link">
+                    <img
+                        class="product-card__image"
+                        src=""
+                        alt="${product.NAME}"
+                        onerror="this.onerror=null; this.src='/public/images/no-product-image.jpg';"
+                    />
+                    <div class="product-card__content">
+                        <div class="product-card__name">High Quality Men Suit Dustproof Cover For Travel</div>
+                        <div class="product-card__rating product-card__rating--star-icon">4.5/5 (20)</div>
+                        <div class="product-card__extras-container">
+                            <div class="product-card__free-delivery">Free Delivery</div>
+                            <div class="product-card__voucher">Voucher: 7</div>
+                        </div>
+                        <div class="product-card__price">৳ 1999</div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </body>
+</html>

@@ -1,0 +1,22 @@
+{
+  "name": "swiftsend",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "SET DEBUG=swiftsend:* & nodemon ./bin/www", 
+    "server": "SET DEBUG=swiftsend:* & nodemon ./bin/www",
+    "dev": "cd frontend && npm run dev"
+  },
+  "dependencies": {
+    "compression": "^1.7.4",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "dotenv": "^16.3.2",
+    "express": "^4.18.2",
+    "express-rate-limit": "^7.1.5",
+    "http-errors": "~1.6.3",
+    "morgan": "~1.9.1",
+    "oracledb": "^6.3.0",
+    "pug": "^3.0.2"
+  }
+}

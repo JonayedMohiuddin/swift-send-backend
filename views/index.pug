@@ -1,0 +1,20 @@
+extends layout.pug
+
+block import 
+   link(rel="icon" type="image/x-icon" href="/public/images/favicon.ico") 
+   link(rel='stylesheet' href='/public/stylesheets/catalog_product.css')
+   script(src='/public/javascripts/index.js' defer='')
+
+block content
+   .product-card-container.js-card-container
+      each product in products 
+         .product-card
+            a.product-card__link(href=`/catalog/product/${product.ID}`)
+               img.product-card__image(src=`${product.IMAGE_URL}`, alt=`${product.NAME}`, onerror="this.onerror=null; this.src='/public/images/no-product-image.jpg';")
+               .product-card__content
+                  .product-card__name #{product.NAME}
+                  .product-card__rating.product-card__rating--star-icon #{product.RATING} (20)
+                  .product-card__extras-container
+                     .product-card__free-delivery Free Delivery
+                     .product-card__voucher Voucher: 7
+                  .product-card__price &#x9F3; #{product.PRICE}
