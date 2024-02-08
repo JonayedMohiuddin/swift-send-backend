@@ -8,6 +8,7 @@ const cookieParser = require("cookie-parser");
 const logger = require("morgan");
 const oracledb = require("oracledb");
 const createError = require("http-errors");
+const cors = require("cors");
 
 oracledb.outFormat = oracledb.OBJECT;
 oracledb.autoCommit = true;
@@ -18,6 +19,9 @@ const catalogRouter = require("./routes/catalog");
 const cartRouter = require("./routes/cart");
 
 const app = express();
+
+// set cors
+app.use(cors());
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));

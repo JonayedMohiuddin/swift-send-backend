@@ -2,16 +2,13 @@ let { databaseQuery } = require("../backend/databaseQuery");
 
 // Index page
 async function index(req, res, next) {
-    const categories = await databaseQuery('SELECT * FROM CATEGORY');
-    const productsList = await databaseQuery('SELECT * FROM PRODUCT');
-    res.render("index", { title : "Swift-Send", products : productsList.rows , categories : categories.rows , currentCategory : 'All'});
+    res.send("NOT IMPLEMENTED: Site Home Page");
 }
 
 // Display list of all Products.
 async function products(req, res, next) {
     try {
-        const result = await databaseQuery('SELECT * FROM PRODUCT');
-        console.log(result.rows);
+        const result = await databaseQuery("SELECT * FROM PRODUCT");
         res.status(200).json(result.rows);
     } catch (error) {
         res.status(500).send("Internal Server Error");
@@ -20,8 +17,12 @@ async function products(req, res, next) {
 
 // Display detail page for a specific Product.
 async function product_detail(req, res, next) {
-    const product = await databaseQuery('SELECT * FROM PRODUCT WHERE ID = :productId', { productId: req.params.id });
-    res.render("product", { title : "Swift-Send", product : product.rows[0], RATING_BAR_WIDTH: 50});
+    try {
+        const result = await databaseQuery(`SELECT * FROM PRODUCT WHERE ID = ${req.params.id}`);
+        res.status(200).json(result.rows[0]);
+    } catch (error) {
+        res.status(500).send("Internal Server Error");
+    }
 }
 
 // Display Product create form on GET.
