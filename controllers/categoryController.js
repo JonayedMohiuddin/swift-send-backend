@@ -2,20 +2,26 @@ let { databaseQuery } = require("../backend/databaseQuery");
 
 // Index page
 async function index(req, res, next) {
-    res.redirect('/catalog');
+    res.redirect("/catalog");
 }
 
 // Display list of all Categorys.
 async function categories(req, res, next) {
-    res.send("NOT IMPLEMENTED: Category list");
+    try {
+        const categories = await databaseQuery("SELECT * FROM CATEGORY");
+        res.status(200).send(categories.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Error fetching categories");
+    }
 }
 
 // Display detail page for a specific Category.
 async function category_detail(req, res, next) {
     const cateogry = req.params.id;
-    const categories = await databaseQuery('SELECT * FROM CATEGORY');
-    const productList = await databaseQuery('SELECT * FROM PRODUCT P JOIN CATEGORY C ON P.CATEGORY_ID = C.ID WHERE C.NAME = :categoryName', { categoryName: cateogry });
-    res.render("index", { title : "Swift-Send", categories : categories.rows, currentCategory : cateogry, products : productList.rows});
+    const categories = await databaseQuery("SELECT * FROM CATEGORY");
+    const productList = await databaseQuery("SELECT * FROM PRODUCT P JOIN CATEGORY C ON P.CATEGORY_ID = C.ID WHERE C.NAME = :categoryName", { categoryName: cateogry });
+    res.render("index", { title: "Swift-Send", categories: categories.rows, currentCategory: cateogry, products: productList.rows });
 }
 
 // Display Category create form on GET.

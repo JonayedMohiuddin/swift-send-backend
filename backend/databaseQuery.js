@@ -30,11 +30,11 @@ async function databaseQuery(query, params = [], options = {}) {
 
         let result = await connection.execute(query, params, options);
 
-        if (result.rows) {
-            console.log("Query Result:", result.rows);
-        } else if (result.rowsAffected) {
-            console.log("Rows Affected:", result.rowsAffected);
-        }
+        // if (result.rows) {
+        //     console.log("Query Result:", result.rows);
+        // } else if (result.rowsAffected) {
+        //     console.log("Rows Affected:", result.rowsAffected);
+        // }
 
         return result;
     } catch (error) {

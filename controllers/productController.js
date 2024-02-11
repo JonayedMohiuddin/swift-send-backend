@@ -1,21 +1,48 @@
 let { databaseQuery } = require("../backend/databaseQuery");
 
-// Index page
-async function index(req, res, next) {
-    res.send("NOT IMPLEMENTED: Site Home Page");
-}
-
 // Display list of all Products.
+// URL = '/catalog/products/:category?search=<>'
 async function products(req, res, next) {
+    const category = req.params.category; // parameter
+    const search = req.query.search; // query string
+
+    const page = (req.query.page - 1) || 0;
+    const product_per_page = 30;
+
+    console.log("category:", category);
+    console.log("search:", search);
+
     try {
-        const result = await databaseQuery("SELECT * FROM PRODUCT");
+        let categorySearchCondition = "";
+        let nameSearchCondition = "";
+
+        if (category && category != "all") categorySearchCondition = ` AND C.NAME = '${category}' `;
+        if (search) nameSearchCondition = ` AND UPPER(P.NAME) LIKE UPPER('%${search}%') `;
+
+        let query = ` SELECT * 
+                      FROM PRODUCT P JOIN CATEGORY C 
+                      ON P.CATEGORY_ID = C.ID 
+                      
+                      WHERE 1 = 1 
+                      ${categorySearchCondition}
+                      ${nameSearchCondition}
+                      
+                      ORDER BY P.ID OFFSET ${page * product_per_page} ROWS FETCH NEXT ${product_per_page} ROWS ONLY`;
+
+        console.log("query:", query);
+
+        const result = await databaseQuery(query);
+
         res.status(200).json(result.rows);
     } catch (error) {
+        console.error("Error fetching products:", error);
         res.status(500).send("Internal Server Error");
     }
 }
 
 // Display detail page for a specific Product.
+// URL = '/catalog/product/:id'
+
 async function product_detail(req, res, next) {
     try {
         const result = await databaseQuery(`SELECT * FROM PRODUCT WHERE ID = ${req.params.id}`);
@@ -25,44 +52,75 @@ async function product_detail(req, res, next) {
     }
 }
 
-// Display Product create form on GET.
-async function product_create_get(req, res, next) {
-    res.send("NOT IMPLEMENTED: Product create GET");
+async function products_count(req, res, next) {
+    const category = req.params.category; // parameter
+    const search = req.query.search; // query string
+
+    console.log("category:", category);
+    console.log("search:", search);
+
+    try {
+        let categorySearchCondition = "";
+        let nameSearchCondition = "";
+
+        if (category && category != "all") categorySearchCondition = ` AND C.NAME = '${category}' `;
+        if (search) nameSearchCondition = ` AND UPPER(P.NAME) LIKE UPPER('%${search}%') `;
+
+        let query = ` SELECT COUNT(*) AS COUNT
+                      FROM PRODUCT P JOIN CATEGORY C 
+                      ON P.CATEGORY_ID = C.ID 
+                      
+                      WHERE 1 = 1 
+                      ${categorySearchCondition}
+                      ${nameSearchCondition}`;
+
+        console.log("query:", query);
+
+        const result = await databaseQuery(query);
+
+        res.status(200).json(result.rows);
+    } catch (error) {
+        console.error("Error fetching products:", error);
+        res.status(500).send("Internal Server Error");
+    }
 }
 
-// Handle Product create on POST.
-async function product_create_post(req, res, next) {
-    res.send("NOT IMPLEMENTED: Product create POST");
+async function products_pages(req, res, next) {
+    const category = req.params.category; // parameter
+    const search = req.query.search; // query string
+
+    const product_per_page = 30;
+
+    console.log("category:", category);
+    console.log("search:", search);
+
+    try {
+        let categorySearchCondition = "";
+        let nameSearchCondition = "";
+
+        if (category && category != "all") categorySearchCondition = ` AND C.NAME = '${category}' `;
+        if (search) nameSearchCondition = ` AND UPPER(P.NAME) LIKE UPPER('%${search}%') `;
+
+        let query = ` SELECT COUNT(*) AS COUNT
+                      FROM PRODUCT P JOIN CATEGORY C 
+                      ON P.CATEGORY_ID = C.ID 
+                      
+                      WHERE 1 = 1 
+                      ${categorySearchCondition}
+                      ${nameSearchCondition}`;
+
+        console.log("query:", query);
+
+        const result = await databaseQuery(query);
+        
+        let productCount = result.rows[0].COUNT;
+        let pageCount = Math.ceil(productCount / product_per_page);
+
+        res.status(200).json({ COUNT: pageCount, PRODUCT_COUNT: productCount});
+    } catch (error) {
+        console.error("Error fetching products:", error);
+        res.status(500).send("Internal Server Error");
+    }
 }
 
-// Display Product delete form on GET.
-async function product_delete_get(req, res, next) {
-    res.send("NOT IMPLEMENTED: Product delete GET");
-}
-
-// Handle Product delete on POST.
-async function product_delete_post(req, res, next) {
-    res.send("NOT IMPLEMENTED: Product delete POST");
-}
-
-// Display Product update form on GET.
-async function product_update_get(req, res, next) {
-    res.send("NOT IMPLEMENTED: Product update GET");
-}
-
-// Handle Product update on POST.
-async function product_update_post(req, res, next) {
-    res.send("NOT IMPLEMENTED: Product update POST");
-}
-
-module.exports = {
-    index,
-    products,
-    product_detail,
-    product_create_get,
-    product_create_post,
-    product_delete_get,
-    product_delete_post,
-    product_update_get,
-    product_update_post,
-};
+module.exports = { products, product_detail, products_count, products_pages };
