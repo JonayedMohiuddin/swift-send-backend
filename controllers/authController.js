@@ -1,59 +1,76 @@
 require("dotenv").config();
 
-const express = require("express");
+let { databaseQuery } = require("../backend/databaseQuery");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const cookieParser = require("cookie-parser");
 
 const tokenExpiryDuration = 86400; // in seconds, 24 hours
 
-const users = [];
+async function signup(req, res) {
+    try {
+        console.log(req.body);
 
-const posts = [
-    {
-        username: "Kyle",
-        title: "Post 1",
-    },
-    {
-        username: "Jim",
-        title: "Post 2",
-    },
-];
+        const users = await databaseQuery(`SELECT * FROM USERS WHERE EMAIL = '${req.body.email}'`);
+        console.log(users.rows);
+
+        if (users.rows.length > 0) {
+            console.log("User already exists");
+            return res.status(400).json({ errorMessage: "User already signed up." });
+        }
+
+        const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        console.log(hashedPassword);
+
+        const query = `INSERT INTO USERS (FIRSTNAME, LASTNAME, EMAIL, PASSWORD) VALUES ('${req.body.firstname}', '${req.body.lastname}', '${req.body.email}', '${hashedPassword}')`;
+        await databaseQuery(query);
+
+        res.status(201).send();
+    } catch (err) {
+        res.status(500).json({ errorMessage: "Error in signup. Please try again." });
+    }
+}
+
+async function login(req, res) {
+    const query = `SELECT * FROM USERS WHERE EMAIL = '${req.body.email}'`;
+    let users = await databaseQuery(query);
+
+    if (users.rows.length === 0) {
+        console.log("Email address doesn't exist.");
+        return res.status(400).json({ errorMessage: "Email address doesn't exist." });
+    } else if (users.rows.length > 1) {
+        console.log("MAJOR ERROR: Multiple users with same email address.");
+        return res.status(500).json({ errorMessage: "MAJOR ERROR: Multiple users with same email address." });
+    }
+
+    const user = users.rows[0];
+
+    try {
+        if (await bcrypt.compare(req.body.password, user.PASSWORD)) {
+            const accessToken = generateAccessToken({ email: user.EMAIL});
+            res.status(200).json({ accessToken: accessToken, message: "Success" });
+        } else {
+            res.status(401).json({ errorMessage: "Invalid password." });
+        }
+    } catch (err) {
+        console.log(err);
+        return res.status(500).json({ errorMessage: "Error in login. Please try again." });
+    }
+}
+
+function generateAccessToken(user) {
+    return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: tokenExpiryDuration });
+}
 
 let refreshTokens = [];
-
 async function refreshToken(req, res) {
     const refreshToken = req.body.token;
     if (refreshToken == null) return res.sendStatus(401);
     if (!refreshTokens.includes(refreshToken)) return res.sendStatus(403);
     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
         if (err) return res.sendStatus(403);
-        const accessToken = generateAccessToken({ name: user.name });
+        const accessToken = generateAccessToken({ email: user.email });
         res.json({ accessToken: accessToken });
     });
-}
-
-async function login(req, res) {
-    const user = users.find((user) => user.name === req.body.username);
-    if (user == null) {
-        return res.status(400).send("Cannot find user");
-    }
-
-    try {
-        if (await bcrypt.compare(req.body.password, user.password)) {
-            const accessToken = generateAccessToken({ username: user.name });
-            res.status(200).json({ accessToken: accessToken, message: "Success" });
-        } else {
-            res.status(401).send("Not Allowed");
-        }
-    } catch (err) {
-        console.log(err);
-        return res.status(500).send("Error in login. Please try again.");
-    }
-}
-
-function generateAccessToken(user) {
-    return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: tokenExpiryDuration });
 }
 
 async function logout(req, res) {
@@ -62,21 +79,10 @@ async function logout(req, res) {
 }
 
 async function get_users(req, res) {
-    res.status(200).json(users);
-}
+    const users = await databaseQuery("SELECT * FROM USERS");
+    console.log(users.rows);
 
-async function signup(req, res) {
-    try {
-        if (users.find((user) => user.name === req.body.username)) return res.status(400).send("User already exists");
-
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        console.log(hashedPassword);
-        const user = { name: req.body.username, password: hashedPassword };
-        users.push(user);
-        res.status(201).send();
-    } catch (err) {
-        res.status(500).send();
-    }
+    res.status(200).json(users.rows);
 }
 
 module.exports = {
