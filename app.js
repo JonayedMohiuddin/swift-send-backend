@@ -14,6 +14,7 @@ oracledb.outFormat = oracledb.OBJECT;
 oracledb.autoCommit = true;
 
 const indexRouter = require("./routes/index");
+const authRouter = require("./routes/auth");
 const usersRouter = require("./routes/users");
 const catalogRouter = require("./routes/catalog");
 const cartRouter = require("./routes/cart");
@@ -39,6 +40,7 @@ app.use(cookieParser());
 app.use("/public", express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
+app.use("/auth", authRouter);
 app.use("/users", usersRouter);
 app.use("/catalog", catalogRouter);
 app.use("/cart", cartRouter);

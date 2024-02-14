@@ -2,12 +2,7 @@ let { databaseQuery } = require("../backend/databaseQuery");
 let oracledb = require("oracledb");
 
 async function index(req, res, next) {
-    let query = `SELECT * FROM ORDERS JOIN PRODUCT ON ORDERS.PRODUCT_ID = PRODUCT.ID ORDER BY PLACED_AT DESC`;
-    let result = await databaseQuery(query, {});
-
-    console.log("Cart page. Orders:", result.rows);
-
-    res.render("cart", { title: "Cart" , cart: result.rows});
+    res.status(200).send("Showing cart page of user : " + req.user);
 }
 
 async function cart_add_product_post(req, res, next) {

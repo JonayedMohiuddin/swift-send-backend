@@ -1,0 +1,22 @@
+###
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+
+{ 
+  "username": "Jim",
+  "password": "11232"
+}
+
+###
+POST http://localhost:3000/auth/signup
+Content-Type: application/json
+
+{
+  "username": "Jim",
+  "password": "11232"
+}
+
+// TEST IF USER CAN ACCESS HIS CART AFTER LOGIN THROUGH TOKEN
+### 
+GET http://localhost:3000/cart/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VybmFtZSI6IkppbSIsImlhdCI6MTcwNzkwMDMzMywiZXhwIjoxNzA3OTg2NzMzfQ.AcztuovVIJgnryzub15j17Y8UDuQtS55PmEV4Zr5lcI

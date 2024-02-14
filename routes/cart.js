@@ -1,17 +1,12 @@
-const express = require("express");
-const router = express.Router(/* { mergeParams: true } */);
+const router = require("express").Router();
 
-// Require controllers.
+const authenticateToken = require("../middlewares/authMiddleware");
 const cart_controller = require("../controllers/cartController");
 
 // URL = '/cart' 
 
-/*
- * CART ROUTES 
- */
-
 // GET cart home page.
-router.get("/", cart_controller.index);
+router.get("/", authenticateToken, cart_controller.index);
 
 // POST request to update Cart.
 router.post("/add/", cart_controller.cart_add_product_post);
