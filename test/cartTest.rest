@@ -1,0 +1,31 @@
+### 
+POST http://localhost:3000/auth/signup
+Content-Type: application/json
+
+{
+  "firstname": "Jim",
+  "lastname": "Doe",
+  "email": "jimdoe@gmail.com",
+  "password": "11232"
+}
+
+###
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+ 
+{ 
+  "email": "jonayedmohiuddin@gmail.com",
+  "password": "abc"
+}
+
+###
+GET http://localhost:3000/cart/
+
+###
+POST http://localhost:3000/cart/add/
+Content-Type: application/json
+
+{
+  "product_id": "1",
+  "quantity": 2
+}

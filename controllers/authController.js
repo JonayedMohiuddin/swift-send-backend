@@ -35,6 +35,8 @@ async function login(req, res) {
     const query = `SELECT * FROM USERS WHERE EMAIL = '${req.body.email}'`;
     let users = await databaseQuery(query);
 
+    if(!users) return res.status(500).json({ errorMessage: "Error in login. Please try again." });
+
     if (users.rows.length === 0) {
         console.log("Email address doesn't exist.");
         return res.status(400).json({ errorMessage: "Email address doesn't exist." });
@@ -47,7 +49,7 @@ async function login(req, res) {
 
     try {
         if (await bcrypt.compare(req.body.password, user.PASSWORD)) {
-            const accessToken = generateAccessToken({ firstname: user.firstname, lastname: user.lastname, email: user.EMAIL});
+            const accessToken = generateAccessToken({ id: user.ID, firstname: user.FIRSTNAME, lastname: user.LASTNAME, email: user.EMAIL});
             res.cookie("token", accessToken, { sameSite: 'Lax' });
             return res.status(200).json({ accessToken: accessToken, message: "Success" });
         } else {
@@ -60,6 +62,7 @@ async function login(req, res) {
 }
 
 function generateAccessToken(user) {
+    // console.log("Generating access token for user: ", user);
     return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: tokenExpiryDuration });
 }
 
