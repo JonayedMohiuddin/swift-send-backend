@@ -1,20 +1,28 @@
 const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 
 // MIDDLEWARE FOR USER AUTHENTICATION
 function authenticateToken(req, res, next) {
-    const authHeader = req.headers["authorization"];
+    const token = req.cookies.token;
 
-    // AUTHENTICATION HEADER : 'BEARER TOKEN'
-    const token = authHeader && authHeader.split(" ")[1];
+    console.log("Token : ", token);
 
-    if (token == null) res.sendStatus(401).send("No login token found. Please login to access this page.");
+    // AUTHENTICATION HEADER : 'BEARER <TOKEN>'
+    // const authHeader = req.headers["authorization"];
+    // const token = authHeader && authHeader.split(" ")[1];
 
-    jwt.verify(token, process.env.ACCESS_TOKEN_SECRET, (err, user) => {
-        if (err) res.sendStatus(403);
+    if (token == null) return res.status(401).json({ errorMessage: "No login token found. Please login to access this page." });
+
+    try {
+        const user = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
         req.user = user;
         console.log("User : ", user);
         next();
-    });
+    } catch (err) {
+        console.log(err);
+        res.clearCookie("token");
+        return res.status(403).json({ errorMessage: "Invalid token or token expired. Login again to access this page." });
+    }
 }
 
 module.exports = authenticateToken;

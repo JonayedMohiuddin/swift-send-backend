@@ -19,10 +19,16 @@ const usersRouter = require("./routes/users");
 const catalogRouter = require("./routes/catalog");
 const cartRouter = require("./routes/cart");
 
+const authenticateToken = require("./middlewares/authMiddleware");
+
 const app = express();
 
 // set cors
-app.use(cors());
+const corsOptions = {
+    origin: "http://localhost:5173", // Replace with your actual frontend domain
+    credentials: true, // Enable credentials (cookies, authorization headers)
+};
+app.use(cors(corsOptions));
 
 // view engine setup
 app.set("views", path.join(__dirname, "views"));
@@ -33,9 +39,9 @@ app.set("view engine", "pug");
  */
 
 app.use(logger("dev"));
+app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
-app.use(cookieParser());
 
 app.use("/public", express.static(path.join(__dirname, "public")));
 
@@ -43,7 +49,7 @@ app.use("/", indexRouter);
 app.use("/auth", authRouter);
 app.use("/users", usersRouter);
 app.use("/catalog", catalogRouter);
-app.use("/cart", cartRouter);
+app.use("/cart", authenticateToken, cartRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

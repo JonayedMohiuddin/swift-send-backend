@@ -3,6 +3,7 @@ require("dotenv").config();
 let { databaseQuery } = require("../backend/databaseQuery");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
+const cookieParser = require("cookie-parser");
 
 const tokenExpiryDuration = 86400; // in seconds, 24 hours
 
@@ -46,10 +47,11 @@ async function login(req, res) {
 
     try {
         if (await bcrypt.compare(req.body.password, user.PASSWORD)) {
-            const accessToken = generateAccessToken({ email: user.EMAIL});
-            res.status(200).json({ accessToken: accessToken, message: "Success" });
+            const accessToken = generateAccessToken({ firstname: user.firstname, lastname: user.lastname, email: user.EMAIL});
+            res.cookie("token", accessToken, { sameSite: 'Lax' });
+            return res.status(200).json({ accessToken: accessToken, message: "Success" });
         } else {
-            res.status(401).json({ errorMessage: "Invalid password." });
+            return res.status(401).json({ errorMessage: "Invalid password." });
         }
     } catch (err) {
         console.log(err);
@@ -61,22 +63,27 @@ function generateAccessToken(user) {
     return jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: tokenExpiryDuration });
 }
 
-let refreshTokens = [];
-async function refreshToken(req, res) {
-    const refreshToken = req.body.token;
-    if (refreshToken == null) return res.sendStatus(401);
-    if (!refreshTokens.includes(refreshToken)) return res.sendStatus(403);
-    jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
-        if (err) return res.sendStatus(403);
-        const accessToken = generateAccessToken({ email: user.email });
-        res.json({ accessToken: accessToken });
-    });
+async function logout(req, res) {
+    res.clearCookie("token");
+    res.status(204).send();
 }
 
-async function logout(req, res) {
-    refreshTokens = refreshTokens.filter((token) => token !== req.body.token);
-    res.sendStatus(204);
-}
+// let refreshTokens = [];
+// async function refreshToken(req, res) {
+//     const refreshToken = req.body.token;
+//     if (refreshToken == null) return res.sendStatus(401);
+//     if (!refreshTokens.includes(refreshToken)) return res.sendStatus(403);
+//     jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET, (err, user) => {
+//         if (err) return res.sendStatus(403);
+//         const accessToken = generateAccessToken({ firstname: user.firstname, lastname: user.lastname, email: user.EMAIL});
+//         res.json({ accessToken: accessToken });
+//     });
+// }
+
+// async function logout(req, res) {
+//     refreshTokens = refreshTokens.filter((token) => token !== req.body.token);
+//     res.sendStatus(204);
+// }
 
 async function get_users(req, res) {
     const users = await databaseQuery("SELECT * FROM USERS");
@@ -86,7 +93,6 @@ async function get_users(req, res) {
 }
 
 module.exports = {
-    refreshToken,
     login,
     logout,
     get_users,

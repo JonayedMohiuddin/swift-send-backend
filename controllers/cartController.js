@@ -2,7 +2,7 @@ let { databaseQuery } = require("../backend/databaseQuery");
 let oracledb = require("oracledb");
 
 async function index(req, res, next) {
-    res.status(200).send("Showing cart page of user : " + req.user);
+    return res.status(200).json({});
 }
 
 async function cart_add_product_post(req, res, next) {
