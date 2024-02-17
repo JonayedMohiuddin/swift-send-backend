@@ -2,14 +2,14 @@
 POST http://localhost:3000/auth/signup
 Content-Type: application/json
 
-{
-  "firstname": "Jim",
-  "lastname": "Doe",
-  "email": "jimdoe@gmail.com",
-  "password": "11232"
+{ 
+  "firstname": "Jonayed",
+  "lastname": "Mohiuddin",
+  "email": "jonayedmohiuddin@gmail.com",
+  "password": "abc"
 }
 
-###
+### 
 POST http://localhost:3000/auth/login
 Content-Type: application/json
  
@@ -20,12 +20,29 @@ Content-Type: application/json
 
 ###
 GET http://localhost:3000/cart/
-
+ 
 ###
 POST http://localhost:3000/cart/add/
 Content-Type: application/json
 
 {
-  "product_id": "1",
-  "quantity": 2
+  "product_id": "3",
+  "quantity": 1
+}
+
+###
+POST http://localhost:3000/cart/update/
+Content-Type: application/json
+
+{
+  "cart_item_id": "7",
+  "quantity": 5
+}
+
+###
+POST http://localhost:3000/cart/remove/
+Content-Type: application/json
+
+{
+  "cart_item_id": "7"
 }
