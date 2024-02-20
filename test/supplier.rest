@@ -1,0 +1,12 @@
+###
+GET http://localhost:3000/supplier/details
+ 
+###
+POST http://localhost:3000/supplier/add
+
+###
+POST http://localhost:3000/supplier/remove
+
+###
+POST http://localhost:3000/supplier/update
+

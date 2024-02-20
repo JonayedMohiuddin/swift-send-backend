@@ -3,8 +3,8 @@ POST http://localhost:3000/auth/signup
 Content-Type: application/json
 
 { 
-  "firstname": "Jonayed",
-  "lastname": "Mohiuddin",
+  "userType" : "users",
+  "name": "Jonayed Mohiuddin",
   "email": "jonayedmohiuddin@gmail.com",
   "password": "abc"
 }
@@ -14,6 +14,7 @@ POST http://localhost:3000/auth/login
 Content-Type: application/json
  
 { 
+  "userType": "users",
   "email": "jonayedmohiuddin@gmail.com",
   "password": "abc"
 }

@@ -3,29 +3,49 @@ POST http://localhost:3000/auth/login
 Content-Type: application/json
  
 { 
-  "email": "jimdoe@gmail.com",
+  "userType": "users",
+  "email": "jimdoe-user@gmail.com",
+  "password": "11232"
+}
+
+###   
+POST http://localhost:3000/auth/signup
+Content-Type: application/json
+ 
+{
+  "userType": "users",
+  "name": "Jim Doe",
+  "email": "jimdoe-user@gmail.com",
+  "password": "11232"
+}
+
+###   
+POST http://localhost:3000/auth/signup
+Content-Type: application/json
+ 
+{
+  "userType": "supplier",
+  "name": "Jim Doe",
+  "email": "jimdoe-supplier@gmail.com",
   "password": "11232"
 }
 
 ### 
-POST http://localhost:3000/auth/signup
+POST http://localhost:3000/auth/login
 Content-Type: application/json
-
-{
-  "firstname": "Jim",
-  "lastname": "Doe",
-  "email": "jimdoe@gmail.com",
+ 
+{ 
+  "userType": "supplier",
+  "email": "jimdoe-supplier@gmail.com",
   "password": "11232"
 }
  
 ###  
 GET http://localhost:3000/auth/users
 
-// TEST IF USER CAN ACCESS HIS CART AFTER LOGIN THROUGH TOKEN
 ### 
 GET http://localhost:3000/cart
-Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImppbWRvZTJAZ21haWwuY29tIiwiaWF0IjoxNzA3OTUwNzUxLCJleHAiOjE3MDgwMzcxNTF9.qUIiRbzA1N9At01Pn7oMkuQOJ1yq5e2I3RSRwlckkoE
- 
+
 ###
 GET http://localhost:3000/cart/test
 

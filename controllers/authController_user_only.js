@@ -11,36 +11,18 @@ async function signup(req, res) {
     try {
         console.log(req.body);
 
-        let userType = req.body.userType;
-        if (!userType) return res.status(400).json({ errorMessage: "Server side error : User type not provided." });
-        userType = userType.toLowerCase();
-
-        let tableName;
-        if (userType === "users" || userType === "user" || userType === "customer") {
-            tableName = "USERS";
-            console.log("User type: ", userType);
-        } else if (userType === "admin") {
-            tableName = "ADMIN";
-        } else if (userType === "supplier") {
-            tableName = "SUPPLIER";
-        } else {
-            return res.status(400).json({ errorMessage: "Invalid user type." });
-        }
-
-        let query = `SELECT * FROM ${tableName} WHERE EMAIL = '${req.body.email}'`;
-        console.log(query);
-        const users = await databaseQuery(query);
+        const users = await databaseQuery(`SELECT * FROM USERS WHERE EMAIL = '${req.body.email}'`);
         console.log(users.rows);
 
         if (users.rows.length > 0) {
-            console.log(`${userType} already exists`);
-            return res.status(400).json({ errorMessage: `Email already signed up.` });
+            console.log("User already exists");
+            return res.status(400).json({ errorMessage: "User already signed up." });
         }
 
         const hashedPassword = await bcrypt.hash(req.body.password, 10);
         console.log(hashedPassword);
 
-        query = `INSERT INTO ${tableName} (NAME, EMAIL, PASSWORD) VALUES ('${req.body.name}', '${req.body.email}', '${hashedPassword}')`;
+        const query = `INSERT INTO USERS (FIRSTNAME, LASTNAME, EMAIL, PASSWORD) VALUES ('${req.body.firstname}', '${req.body.lastname}', '${req.body.email}', '${hashedPassword}')`;
         await databaseQuery(query);
 
         res.status(201).send();
@@ -50,26 +32,10 @@ async function signup(req, res) {
 }
 
 async function login(req, res) {
-    let userType = req.body.userType;
-    if (!userType) return res.status(400).json({ errorMessage: "Server side error : User type not provided." });
-    userType = userType.toLowerCase();
-
-    let tableName;
-    if (userType === "users" || userType === "user" || userType === "customer") {
-        tableName = "USERS";
-        console.log("User type: ", userType);
-    } else if (userType === "admin") {
-        tableName = "ADMIN";
-    } else if (userType === "supplier") {
-        tableName = "SUPPLIER";
-    } else {
-        return res.status(400).json({ errorMessage: "Invalid user type." });
-    }
-
-    const query = `SELECT * FROM ${tableName} WHERE EMAIL = '${req.body.email}'`;
+    const query = `SELECT * FROM USERS WHERE EMAIL = '${req.body.email}'`;
     let users = await databaseQuery(query);
 
-    if (!users) return res.status(500).json({ errorMessage: "Error in login. Please try again." });
+    if(!users) return res.status(500).json({ errorMessage: "Error in login. Please try again." });
 
     if (users.rows.length === 0) {
         console.log("Email address doesn't exist.");
@@ -83,9 +49,8 @@ async function login(req, res) {
 
     try {
         if (await bcrypt.compare(req.body.password, user.PASSWORD)) {
-            let userTypeTemp = userType;
-            const accessToken = generateAccessToken({ id: user.ID, name: user.NAME, email: user.EMAIL, userType: userTypeTemp });
-            res.cookie("token", accessToken, { sameSite: "Lax" });
+            const accessToken = generateAccessToken({ id: user.ID, firstname: user.FIRSTNAME, lastname: user.LASTNAME, email: user.EMAIL});
+            res.cookie("token", accessToken, { sameSite: 'Lax' });
             return res.status(200).json({ accessToken: accessToken, message: "Success" });
         } else {
             return res.status(401).json({ errorMessage: "Invalid password." });
