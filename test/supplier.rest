@@ -1,12 +1,61 @@
-###
-GET http://localhost:3000/supplier/details
+###   
+POST http://localhost:3000/auth/signup
+Content-Type: application/json
  
-###
-POST http://localhost:3000/supplier/add
+{
+  "userType": "supplier",
+  "name": "Jim Doe",
+  "email": "jimdoe-supplier@gmail.com",
+  "password": "11232"
+}
+
+### 
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+ 
+{ 
+  "userType": "supplier",
+  "email": "jimdoe-supplier@gmail.com",
+  "password": "11232"
+}
+
+###   
+GET http://localhost:3000/supplier/all
+
+### 
+GET http://localhost:3000/supplier/products
 
 ###
-POST http://localhost:3000/supplier/remove
+POST http://localhost:3000/supplier/addProduct
+Content-Type: application/json
+ 
+{ 
+  "categoryId": "1",
+  "name": "Product 1",
+  "price": 100,
+  "description": "Product 1 description",
+  "imageUrl": "images/no-product-image.jpg",
+  "discount": 0.1
+}
 
 ###
-POST http://localhost:3000/supplier/update
+POST http://localhost:3000/supplier/updateProduct
+Content-Type: application/json
+ 
+{ 
+  "productId": "1",
+  "categoryId": "1",
+  "name": "Product 1",
+  "price": 100,
+  "description": "",
+  "imageUrl": "",
+  "discount": 0.2
+}
 
+###
+POST http://localhost:3000/supplier/removeProduct
+Content-Type: application/json
+ 
+{ 
+  "productId": "2"
+}
