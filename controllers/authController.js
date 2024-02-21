@@ -1,4 +1,5 @@
 require("dotenv").config();
+let oracledb = require("oracledb");
 
 let { databaseQuery } = require("../backend/databaseQuery");
 const bcrypt = require("bcrypt");
@@ -37,14 +38,15 @@ async function signup(req, res) {
             return res.status(400).json({ errorMessage: `Email already signed up.` });
         }
 
-        const hashedPassword = await bcrypt.hash(req.body.password, 10);
-        console.log(hashedPassword);
+        // const hashedPassword = await bcrypt.hash(req.body.password, 10);
+        // console.log(hashedPassword);
 
-        query = `INSERT INTO ${tableName} (NAME, EMAIL, PASSWORD) VALUES ('${req.body.name}', '${req.body.email}', '${hashedPassword}')`;
+        query = `INSERT INTO ${tableName} (NAME, EMAIL, PASSWORD) VALUES ('${req.body.name}', '${req.body.email}', HASH_PASSWORD('${req.body.password}'))`;
         await databaseQuery(query);
 
         res.status(201).send();
     } catch (err) {
+        console.log(err);
         res.status(500).json({ errorMessage: "Error in signup. Please try again." });
     }
 }
@@ -66,7 +68,7 @@ async function login(req, res) {
         return res.status(400).json({ errorMessage: "Invalid user type." });
     }
 
-    const query = `SELECT * FROM ${tableName} WHERE EMAIL = '${req.body.email}'`;
+    let query = `SELECT * FROM ${tableName} WHERE EMAIL = '${req.body.email}'`;
     let users = await databaseQuery(query);
 
     if (!users) return res.status(500).json({ errorMessage: "Error in login. Please try again." });
@@ -82,7 +84,15 @@ async function login(req, res) {
     const user = users.rows[0];
 
     try {
-        if (await bcrypt.compare(req.body.password, user.PASSWORD)) {
+        query = `BEGIN :hashValue := HASH_PASSWORD(:password); END;`;
+        const result = await databaseQuery(query, {
+            password: { dir: oracledb.BIND_IN, type: oracledb.STRING, val: req.body.password },
+            hashValue: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+        });
+
+        const hashedPassword = result.outBinds.hashValue;
+
+        if (user.PASSWORD === hashedPassword) {
             let userTypeTemp = userType;
             const accessToken = generateAccessToken({ id: user.ID, name: user.NAME, email: user.EMAIL, userType: userTypeTemp });
             res.cookie("token", accessToken, { sameSite: "Lax" });
@@ -90,6 +100,16 @@ async function login(req, res) {
         } else {
             return res.status(401).json({ errorMessage: "Invalid password." });
         }
+
+        // USING BCRYPT INSTEAD OF ORACLE DB HASHING FUNCTION TO HASH PASSWORDS
+        // if (await bcrypt.compare(req.body.password, user.PASSWORD)) {
+        //     let userTypeTemp = userType;
+        //     const accessToken = generateAccessToken({ id: user.ID, name: user.NAME, email: user.EMAIL, userType: userTypeTemp });
+        //     res.cookie("token", accessToken, { sameSite: "Lax" });
+        //     return res.status(200).json({ accessToken: accessToken, message: "Success" });
+        // } else {
+        //     return res.status(401).json({ errorMessage: "Invalid password." });
+        // }
     } catch (err) {
         console.log(err);
         return res.status(500).json({ errorMessage: "Error in login. Please try again." });

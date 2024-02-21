@@ -47,3 +47,24 @@ Content-Type: application/json
 {
   "cart_item_id": "7"
 }
+
+### 
+POST http://localhost:3000/auth/signup
+Content-Type: application/json
+
+{ 
+  "userType" : "supplier",
+  "name": "Jonayed Mohiuddin",
+  "email": "test@gmail.com",
+  "password": "abc"
+}
+
+### 
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+ 
+{ 
+  "userType": "supplier",
+  "email": "test@gmail.com",
+  "password": "abc"
+}

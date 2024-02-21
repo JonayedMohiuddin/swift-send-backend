@@ -15,8 +15,8 @@ Content-Type: application/json
  
 { 
   "userType": "supplier",
-  "email": "jimdoe-supplier@gmail.com",
-  "password": "11232"
+  "email": "jonayedmohiuddin@gmail.com",
+  "password": "abc"
 }
 
 ###   
@@ -47,7 +47,7 @@ Content-Type: application/json
   "categoryId": "1",
   "name": "Product 1",
   "price": 100,
-  "description": "",
+  "description": "hello",
   "imageUrl": "",
   "discount": 0.2
 }

@@ -19,7 +19,7 @@ async function index(req, res, next) {
         PR.PRICE,
         PR.IMAGE_URL,
         PR.DISCOUNT,
-        PR.RATING,
+        PR.RATING_COUNT,
         PR.TOTAL_RATING,
 
         S.NAME AS SUPPLIER_NAME

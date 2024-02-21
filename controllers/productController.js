@@ -45,7 +45,18 @@ async function products(req, res, next) {
 
 async function product_detail(req, res, next) {
     try {
-        const result = await databaseQuery(`SELECT * FROM PRODUCT WHERE ID = ${req.params.id}`);
+        let query = `
+                SELECT 
+                C.NAME AS CATEGORY_NAME,
+                S.NAME AS SUPPLIER_NAME,
+                PR.*
+
+                FROM PRODUCT PR 
+                JOIN CATEGORY C ON PR.CATEGORY_ID = C.ID
+                JOIN SUPPLIER S ON PR.SUPPLIER_ID = S.ID 
+                WHERE PR.ID = ${req.params.id}`;
+
+        const result = await databaseQuery(query);
         res.status(200).json(result.rows[0]);
     } catch (error) {
         res.status(500).send("Internal Server Error");

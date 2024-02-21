@@ -8,13 +8,13 @@ function authenticateToken(userType) {
         console.log("Token: ", token);
 
         if (token == null || token == undefined) {
-            return res.status(401).json({ errorMessage: "No login token found. Please login to access this page." });
+            return res.status(401).json({ errorMessage: "Please login to access this page." });
         }
 
         try {
             const user = jwt.verify(token, process.env.ACCESS_TOKEN_SECRET);
             if (user.userType !== userType) {
-                return res.status(403).json({ errorMessage: `Login with your ${userType} account to access this page.` });
+                return res.status(403).json({ errorMessage: `Login with ${userType} account to access this page.` });
             }
             req.user = user;
             console.log("Cookie Data: ", user);

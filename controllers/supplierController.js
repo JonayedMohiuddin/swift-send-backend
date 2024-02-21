@@ -27,7 +27,27 @@ async function supplier_details_get(req, res, next) {
 
 async function supplier_products_get(req, res, next) {
     try {
-        const query = `SELECT * FROM PRODUCT WHERE SUPPLIER_ID = ${req.user.id}`;
+        const query = `
+                SELECT 
+                
+                PR.ID AS PRODUCT_ID,
+                PR.NAME AS PRODUCT_NAME,
+                PR.PRICE AS PRODUCT_PRICE,
+                PR.DESCRIPTION AS PRODUCT_DESCRIPTION,
+                PR.IMAGE_URL AS PRODUCT_IMAGE_URL,
+                PR.DISCOUNT AS PRODUCT_DISCOUNT,
+                PR.RATING_COUNT AS PRODUCT_RATING_COUNT,
+                PR.TOTAL_RATING AS PRODUCT_TOTAL_RATING,
+
+                CA.ID AS CATEGORY_ID,
+                CA.NAME AS CATEGORY_NAME,
+                CA.DESCRIPTION AS CATEGORY_DESCRIPTION,
+                CA.IMAGE_URL AS CATEGORY_IMAGE_URL
+
+                FROM PRODUCT PR 
+                JOIN CATEGORY CA 
+                ON PR.CATEGORY_ID = CA.ID
+                WHERE SUPPLIER_ID = ${req.user.id}`;
 
         const result = await databaseQuery(query);
         console.log("result: ", result.rows);
@@ -57,7 +77,7 @@ async function add_product_post(req, res, next) {
             return res.status(400).json({ errorMessage: "Category does not exist" });
         }
 
-        query = `INSERT INTO PRODUCT (SUPPLIER_ID, CATEGORY_ID, NAME, PRICE, DESCRIPTION, IMAGE_URL, DISCOUNT) VALUES (${supplier.id}, ${categoryId}, '${name}', ${price}, '${description}', '${imageUrl}', ${discount})`;
+        query = `INSERT INTO PRODUCT (SUPPLIER_ID, CATEGORY_ID, NAME, PRICE, DESCRIPTION, IMAGE_URL, DISCOUNT, RATING_COUNT, TOTAL_RATING) VALUES (${supplier.id}, ${categoryId}, '${name}', ${price}, '${description}', '${imageUrl}', ${discount}, 0, 0)`;
         result = await databaseQuery(query);
         res.status(201).json({ message: "Product added successfully" });
     } catch (error) {
@@ -71,10 +91,12 @@ async function remove_product_post(req, res, next) {
     const supplier = req.user;
 
     try {
-        let query = `SELECT * FROM PRODUCT WHERE ID = ${productId} AND SUPPLIER_ID = ${supplier.id}`;
+        let query = `SELECT * FROM PRODUCT WHERE ID = ${productId}`;
         let result = await databaseQuery(query);
         if (result.rows.length === 0) {
             return res.status(400).json({ errorMessage: "Product does not exist" });
+        } else if(result.rows[0].SUPPLIER_ID !== req.user.id) {
+            return res.status(400).json({ errorMessage: "You are not authorized to remove this product" });
         }
 
         query = `DELETE FROM PRODUCT WHERE ID = ${productId} AND SUPPLIER_ID = ${supplier.id}`;
@@ -103,6 +125,8 @@ async function update_product_post(req, res, next) {
         let result = await databaseQuery(query);
         if (result.rows.length === 0) {
             return res.status(400).json({ errorMessage: "Product does not exist" });
+        } else if(result.rows[0].SUPPLIER_ID !== req.user.id) {
+            return res.status(400).json({ errorMessage: "You are not authorized to update this product" });
         }
 
         // check if category exists
