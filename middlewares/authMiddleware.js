@@ -8,6 +8,8 @@ function authenticateToken(userType) {
         console.log("Token: ", token);
 
         if (token == null || token == undefined) {
+            res.clearCookie("token");
+            res.clearCookie("userType");
             return res.status(401).json({ errorMessage: "Please login to access this page." });
         }
 
@@ -22,6 +24,7 @@ function authenticateToken(userType) {
         } catch (err) {
             console.log(err);
             res.clearCookie("token");
+            res.clearCookie("userType");
             return res.status(403).json({ errorMessage: "Invalid token or token expired. Login again to access this page." });
         }
     };

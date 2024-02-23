@@ -96,6 +96,7 @@ async function login(req, res) {
             let userTypeTemp = userType;
             const accessToken = generateAccessToken({ id: user.ID, name: user.NAME, email: user.EMAIL, userType: userTypeTemp });
             res.cookie("token", accessToken, { sameSite: "Lax" });
+            res.cookie("userType", userType, { sameSite: "Lax" });
             return res.status(200).json({ accessToken: accessToken, message: "Success" });
         } else {
             return res.status(401).json({ errorMessage: "Invalid password." });
@@ -123,6 +124,7 @@ function generateAccessToken(user) {
 
 async function logout(req, res) {
     res.clearCookie("token");
+    res.clearCookie("userType");
     res.status(204).send();
 }
 

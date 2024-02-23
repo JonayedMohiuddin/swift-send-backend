@@ -50,8 +50,8 @@ app.use("/public", express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
 app.use("/auth", authRouter);
-app.use("/users", usersRouter);
 app.use("/catalog", catalogRouter);
+app.use("/users", authenticateUserToken, usersRouter);
 app.use("/cart", authenticateUserToken, cartRouter);
 app.use("/supplier", authenticateSupplierToken , supplierRouter);
 
