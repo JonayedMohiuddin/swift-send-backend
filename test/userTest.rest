@@ -1,4 +1,4 @@
-###
+### 
 POST http://localhost:3000/auth/login
 Content-Type: application/json
  
@@ -6,7 +6,7 @@ Content-Type: application/json
   "userType": "users",
   "email": "jonayedmohiuddin@gmail.com",
   "password": "abc"
-}
+} 
 
 ###
 GET http://localhost:3000/users/orders
@@ -14,29 +14,26 @@ GET http://localhost:3000/users/orders
 ###
 GET http://localhost:3000/users/orders/1
 
-###
+###    
 POST http://localhost:3000/users/orders/add
 Content-Type: application/json
 
 {
     "list" : [
-        { 
-            "userId": 14,
-            "productId": 21,
-            "quantity": 3
-        },
         {
-            "userId": 4,
             "productId": 2,
-            "quantity": 89
+            "quantity": 555
+        },        
+        {
+            "productId": 1,
+            "quantity": 255
+        },  
+        {
+            "productId": 3,
+            "quantity": 155
         }
     ]
 }
 
 ### 
-POST http://localhost:3000/users/orders/remove
-
-{
-    "userId": 1,
-    "productId": 1
-}
+POST http://localhost:3000/users/orders/cancel
