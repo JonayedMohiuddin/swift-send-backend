@@ -60,9 +60,13 @@ Content-Type: application/json
   "productId": "2" 
 }
 
-###
-GET http://localhost:3000/supplier/orders  
+###  
+GET http://localhost:3000/supplier/orders
+
+###  
+GET http://localhost:3000/supplier/orders/PENDING
 
 ###
 POST http://localhost:3000/supplier/orders/shipped/4
 
+ 

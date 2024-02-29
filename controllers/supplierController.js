@@ -154,19 +154,108 @@ async function update_product_post(req, res, next) {
 // **************************
 // FUTURE CONSIDERATION NEEDS TO BE MADE TO USE SUB QUERY
 // **************************
-async function get_all_orders(req, res, next) {
+
+// URL = '/supplier/orders/:status'
+async function get_all_orders_status(req, res, next) {
+    let status = req.params.status;
     try {
         let supplierId = req.user.id;
         let query = `
-                        SELECT * 
-                        FROM SUPPLIER_PENDING_ORDERS SPO 
+                        SELECT 
+                        SO.ID AS SUPPLIER_ORDER_ID,  
+                        SO.ORDER_ITEM_ID AS ORDER_ITEM_ID,
+                        SO.SUPPLIER_ID AS SUPPLIER_ID,
+                        SO.STATUS AS STATUS,
+                        SO.ADDRESS AS ADDRESS,
+                        SO.STATUS AS STATUS,
+                        SO.CREATED_AT AS CREATED_AT,
+
+                        OI.ORDER_ID AS ORDER_ID,
+                        OI.PRODUCT_ID AS PRODUCT_ID, 
+                        OI.QUANTITY AS QUANTITY,
+                        OI.LAST_UPDATED_ON AS LAST_UPDATED_ON,
+ 
+                        PR.NAME AS NAME,
+                        PR.CATEGORY_ID AS CATEGORY_ID,
+                        PR.PRICE AS PRICE,
+                        PR.IMAGE_URL AS IMAGE_URL,
+                        PR.DISCOUNT AS DISCOUNT,
+                        PR.RATING_COUNT AS RATING_COUNT,
+                        PR.TOTAL_RATING AS TOTAL_RATING
+
+                        FROM SUPPLIER_ORDERS SO 
                         JOIN ORDER_ITEM OI
-                        ON SPO.ORDER_ITEM_ID = OI.ID
+                        ON SO.ORDER_ITEM_ID = OI.ID
                         JOIN PRODUCT PR
                         ON OI.PRODUCT_ID = PR.ID
-                        WHERE ${supplierId} = SPO.SUPPLIER_ID
-                        ORDER BY OI.LAST_UPDATED_ON ASC, OI.ID ASC
+                        WHERE ${supplierId} = SO.SUPPLIER_ID
+                        AND SO.STATUS = UPPER('${status}')  
+                        ORDER BY OI.LAST_UPDATED_ON DESC, OI.ID ASC
                     `;
+
+        // query = `   SELECT *
+        //             FROM SUPPLIER_ORDERS SO
+        //             JOIN ORDER_ITEM OI
+        //             ON SO.ORDER_ITEM_ID = OI.ID
+        //             JOIN PRODUCT PR
+        //             ON OI.PRODUCT_ID = PR.ID
+        //             WHERE ${supplierId} = SO.SUPPLIER_ID
+        //             ORDER BY OI.LAST_UPDATED_ON DESC, OI.ID ASC`;
+
+        let result = await databaseQuery(query);
+
+        return res.status(200).json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ errorMessage: err.message });
+    }
+}
+
+// URL = '/supplier/orders'
+async function get_all_orders(req, res, next) {
+    let status = req.params.status;
+    try {
+        let supplierId = req.user.id;
+        let query = `
+                        SELECT 
+                        SO.ID AS SUPPLIER_ORDER_ID,  
+                        SO.ORDER_ITEM_ID AS ORDER_ITEM_ID,
+                        SO.SUPPLIER_ID AS SUPPLIER_ID,
+                        SO.STATUS AS STATUS,
+                        SO.ADDRESS AS ADDRESS,
+                        SO.STATUS AS STATUS,
+                        SO.CREATED_AT AS CREATED_AT,
+
+                        OI.ORDER_ID AS ORDER_ID,
+                        OI.PRODUCT_ID AS PRODUCT_ID, 
+                        OI.QUANTITY AS QUANTITY,
+                        OI.LAST_UPDATED_ON AS LAST_UPDATED_ON,
+ 
+                        PR.NAME AS NAME,
+                        PR.CATEGORY_ID AS CATEGORY_ID,
+                        PR.PRICE AS PRICE,
+                        PR.IMAGE_URL AS IMAGE_URL,
+                        PR.DISCOUNT AS DISCOUNT,
+                        PR.RATING_COUNT AS RATING_COUNT,
+                        PR.TOTAL_RATING AS TOTAL_RATING
+
+                        FROM SUPPLIER_ORDERS SO 
+                        JOIN ORDER_ITEM OI
+                        ON SO.ORDER_ITEM_ID = OI.ID
+                        JOIN PRODUCT PR
+                        ON OI.PRODUCT_ID = PR.ID
+                        WHERE ${supplierId} = SO.SUPPLIER_ID
+                        ORDER BY OI.LAST_UPDATED_ON DESC, OI.ID ASC
+                    `;
+
+        // query = `   SELECT *
+        //             FROM SUPPLIER_ORDERS SO
+        //             JOIN ORDER_ITEM OI
+        //             ON SO.ORDER_ITEM_ID = OI.ID
+        //             JOIN PRODUCT PR
+        //             ON OI.PRODUCT_ID = PR.ID
+        //             WHERE ${supplierId} = SO.SUPPLIER_ID
+        //             ORDER BY OI.LAST_UPDATED_ON DESC, OI.ID ASC`;
 
         let result = await databaseQuery(query);
 
@@ -180,25 +269,26 @@ async function get_all_orders(req, res, next) {
 async function ship_product_post(req, res, next) {
     try {
         let supplierId = req.user.id;
-        let orderItemId = req.params.orderItemId;
+        let supplierOrderId = req.params.supplierOrderId;
 
-        let query = `SELECT * FROM SUPPLIER_PENDING_ORDERS WHERE SUPPLIER_ID = ${supplierId} AND ORDER_ITEM_ID = ${orderItemId}`;
+        let query = `SELECT * FROM SUPPLIER_ORDERS WHERE ID = ${supplierOrderId} AND SUPPLIER_ID = ${supplierId}`;
         let result = await databaseQuery(query);
         if (result.rows.length === 0) {
             return res.status(400).json({ errorMessage: "Order item does not exist" });
         }
 
-        query = `DELETE FROM SUPPLIER_PENDING_ORDERS WHERE SUPPLIER_ID = ${supplierId} AND ORDER_ITEM_ID = ${orderItemId}`;
+        // query = `DELETE FROM SUPPLIER_PENDING_ORDERS WHERE SUPPLIER_ID = ${supplierId} AND ORDER_ITEM_ID = ${orderItemId}`;
+        query = `UPDATE SUPPLIER_ORDERS SET STATUS = 'SHIPPED' WHERE ID = ${supplierOrderId} AND SUPPLIER_ID = ${supplierId}`;
         result = await databaseQuery(query);
- 
+
         return res.status(200).json({ message: "Product shipped successfully" });
     } catch (err) {
         console.error(err);
         res.status(500).json({ errorMessage: err.message });
     }
-} 
+}
 
-module.exports = { 
+module.exports = {
     add_product_post,
     remove_product_post,
     update_product_post,
@@ -206,5 +296,6 @@ module.exports = {
     supplier_all_get,
     supplier_products_get,
     get_all_orders,
+    get_all_orders_status,
     ship_product_post,
 };

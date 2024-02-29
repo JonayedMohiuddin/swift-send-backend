@@ -4,7 +4,7 @@ let oracledb = require("oracledb");
 // URL : /users/orders
 async function get_all_orders(req, res, next) {
     try {
-        let query = `
+        let query = ` 
                         SELECT * 
                         FROM ORDER_ITEM OIT 
                         JOIN PRODUCT PR
