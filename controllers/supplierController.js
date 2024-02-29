@@ -95,7 +95,7 @@ async function remove_product_post(req, res, next) {
         let result = await databaseQuery(query);
         if (result.rows.length === 0) {
             return res.status(400).json({ errorMessage: "Product does not exist" });
-        } else if(result.rows[0].SUPPLIER_ID !== req.user.id) {
+        } else if (result.rows[0].SUPPLIER_ID !== req.user.id) {
             return res.status(400).json({ errorMessage: "You are not authorized to remove this product" });
         }
 
@@ -125,7 +125,7 @@ async function update_product_post(req, res, next) {
         let result = await databaseQuery(query);
         if (result.rows.length === 0) {
             return res.status(400).json({ errorMessage: "Product does not exist" });
-        } else if(result.rows[0].SUPPLIER_ID !== req.user.id) {
+        } else if (result.rows[0].SUPPLIER_ID !== req.user.id) {
             return res.status(400).json({ errorMessage: "You are not authorized to update this product" });
         }
 
@@ -143,18 +143,68 @@ async function update_product_post(req, res, next) {
         query = `UPDATE PRODUCT SET CATEGORY_ID = ${categoryId}, NAME = '${name}', PRICE = ${price}, DESCRIPTION = '${description}', IMAGE_URL = '${imageUrl}', DISCOUNT = ${discount} WHERE ID = ${productId}`;
         result = await databaseQuery(query);
         res.status(200).json({ message: "Product updated successfully" });
-        
     } catch (error) {
         console.error("Error in update_product_post: ", error);
         res.status(500).json({ errorMessage: "Internal Server Error" });
     }
 }
 
-module.exports = {
+// **************************
+// THIS IS A SCOPE FOR USING SUB QUERY IF I HADNT PUT THE SUPPLIER_ID IN THE SUPPLIER_PENDING_ORDERS TABLE
+// **************************
+// FUTURE CONSIDERATION NEEDS TO BE MADE TO USE SUB QUERY
+// **************************
+async function get_all_orders(req, res, next) {
+    try {
+        let supplierId = req.user.id;
+        let query = `
+                        SELECT * 
+                        FROM SUPPLIER_PENDING_ORDERS SPO 
+                        JOIN ORDER_ITEM OI
+                        ON SPO.ORDER_ITEM_ID = OI.ID
+                        JOIN PRODUCT PR
+                        ON OI.PRODUCT_ID = PR.ID
+                        WHERE ${supplierId} = SPO.SUPPLIER_ID
+                        ORDER BY OI.LAST_UPDATED_ON ASC, OI.ID ASC
+                    `;
+
+        let result = await databaseQuery(query);
+
+        return res.status(200).json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ errorMessage: err.message });
+    }
+}
+
+async function ship_product_post(req, res, next) {
+    try {
+        let supplierId = req.user.id;
+        let orderItemId = req.params.orderItemId;
+
+        let query = `SELECT * FROM SUPPLIER_PENDING_ORDERS WHERE SUPPLIER_ID = ${supplierId} AND ORDER_ITEM_ID = ${orderItemId}`;
+        let result = await databaseQuery(query);
+        if (result.rows.length === 0) {
+            return res.status(400).json({ errorMessage: "Order item does not exist" });
+        }
+
+        query = `DELETE FROM SUPPLIER_PENDING_ORDERS WHERE SUPPLIER_ID = ${supplierId} AND ORDER_ITEM_ID = ${orderItemId}`;
+        result = await databaseQuery(query);
+ 
+        return res.status(200).json({ message: "Product shipped successfully" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ errorMessage: err.message });
+    }
+} 
+
+module.exports = { 
     add_product_post,
     remove_product_post,
     update_product_post,
     supplier_details_get,
     supplier_all_get,
     supplier_products_get,
+    get_all_orders,
+    ship_product_post,
 };

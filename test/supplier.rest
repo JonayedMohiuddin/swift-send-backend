@@ -5,8 +5,8 @@ Content-Type: application/json
 {
   "userType": "supplier",
   "name": "Jim Doe",
-  "email": "jimdoe-supplier@gmail.com",
-  "password": "11232"
+  "email": "jonayedmohiuddin@gmail.com",
+  "password": "abc"
 }
 
 ### 
@@ -19,7 +19,7 @@ Content-Type: application/json
   "password": "abc"
 }
 
-###   
+###    
 GET http://localhost:3000/supplier/all
 
 ### 
@@ -57,5 +57,12 @@ POST http://localhost:3000/supplier/removeProduct
 Content-Type: application/json
  
 { 
-  "productId": "2"
+  "productId": "2" 
 }
+
+###
+GET http://localhost:3000/supplier/orders  
+
+###
+POST http://localhost:3000/supplier/orders/shipped/4
+

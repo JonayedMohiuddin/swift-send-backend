@@ -14,26 +14,22 @@ GET http://localhost:3000/users/orders
 ###
 GET http://localhost:3000/users/orders/1
 
-###    
+### 
 POST http://localhost:3000/users/orders/add
 Content-Type: application/json
 
 {
-    "list" : [
-        {
-            "productId": 2,
-            "quantity": 555
-        },        
-        {
-            "productId": 1,
-            "quantity": 255
-        },  
-        {
-            "productId": 3,
-            "quantity": 155
-        }
-    ]
+    "productId": 1,
+    "quantity": 5
 }
+
+###    
+POST http://localhost:3000/users/orders/addFromCart
 
 ### 
 POST http://localhost:3000/users/orders/cancel
+Content-Type: application/json
+
+{
+    "orderItemId": 3
+}

@@ -19,4 +19,8 @@ router.post("/removeProduct", supplierController.remove_product_post);
 // POST request to update Supplier.
 router.post("/updateProduct", supplierController.update_product_post);
 
+router.get("/orders", supplierController.get_all_orders);
+
+router.post("/orders/shipped/:orderItemId", supplierController.ship_product_post);
+
 module.exports = router;
