@@ -1,6 +1,6 @@
 let { databaseQuery } = require("../backend/databaseQuery");
 
-// Display list of all Categorys.
+// Display list of all Categories.
 async function categories(req, res, next) {
     try {
         const categories = await databaseQuery("SELECT * FROM CATEGORY");

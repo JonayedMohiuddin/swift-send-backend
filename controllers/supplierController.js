@@ -45,7 +45,7 @@ async function supplier_products_get(req, res, next) {
                 CA.IMAGE_URL AS CATEGORY_IMAGE_URL
 
                 FROM PRODUCT PR 
-                JOIN CATEGORY CA 
+                LEFT JOIN CATEGORY CA 
                 ON PR.CATEGORY_ID = CA.ID
                 WHERE SUPPLIER_ID = ${req.user.id}`;
 
@@ -170,6 +170,12 @@ async function get_all_orders_status(req, res, next) {
                         SO.STATUS AS STATUS,
                         SO.CREATED_AT AS CREATED_AT,
 
+                        (
+                            SELECT NAME
+                            FROM USERS
+                            WHERE ID = SO.USER_ID
+                        ) AS USER_NAME,
+
                         OI.ORDER_ID AS ORDER_ID,
                         OI.PRODUCT_ID AS PRODUCT_ID, 
                         OI.QUANTITY AS QUANTITY,
@@ -190,8 +196,14 @@ async function get_all_orders_status(req, res, next) {
                         ON OI.PRODUCT_ID = PR.ID
                         WHERE ${supplierId} = SO.SUPPLIER_ID
                         AND SO.STATUS = UPPER('${status}')  
-                        ORDER BY OI.LAST_UPDATED_ON DESC, OI.ID ASC
                     `;
+                
+        if(status === 'shipped') {
+            query += `ORDER BY OI.LAST_UPDATED_ON ASC, OI.ID ASC`;
+        }
+        else {
+            query += `ORDER BY OI.LAST_UPDATED_ON DESC, OI.ID ASC`;
+        }
 
         // query = `   SELECT *
         //             FROM SUPPLIER_ORDERS SO
@@ -237,7 +249,15 @@ async function get_all_orders(req, res, next) {
                         PR.IMAGE_URL AS IMAGE_URL,
                         PR.DISCOUNT AS DISCOUNT,
                         PR.RATING_COUNT AS RATING_COUNT,
-                        PR.TOTAL_RATING AS TOTAL_RATING
+                        PR.TOTAL_RATING AS TOTAL_RATING,
+
+                        (
+                            SELECT NAME
+                            FROM USERS
+                            JOIN ORDERS
+                            ON USERS.ID = ORDERS.USER_ID
+                            WHERE ORDERS.ID = OI.ORDER_ID
+                        ) AS USER_NAME
 
                         FROM SUPPLIER_ORDERS SO 
                         JOIN ORDER_ITEM OI

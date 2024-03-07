@@ -19,10 +19,12 @@ const usersRouter = require("./routes/users");
 const catalogRouter = require("./routes/catalog");
 const cartRouter = require("./routes/cart");
 const supplierRouter = require("./routes/supplier");
+const adminRouter = require("./routes/admin");
 
 const authenticateToken = require("./middlewares/authMiddleware");
 const authenticateUserToken = authenticateToken("users");
 const authenticateSupplierToken = authenticateToken("supplier");
+const authenticateAdminToken = authenticateToken("admin");
 
 const app = express();
 
@@ -54,6 +56,7 @@ app.use("/catalog", catalogRouter);
 app.use("/users", authenticateUserToken, usersRouter);
 app.use("/cart", authenticateUserToken, cartRouter);
 app.use("/supplier", authenticateSupplierToken , supplierRouter);
+app.use("/admin", authenticateAdminToken, adminRouter);
 
 // catch 404 and forward to error handler
 app.use(function (req, res, next) {

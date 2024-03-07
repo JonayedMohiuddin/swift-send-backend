@@ -33,3 +33,41 @@ Content-Type: application/json
 {
     "orderItemId": 3
 }
+
+###
+GET http://localhost:3000/users/reviews
+ 
+###
+POST http://localhost:3000/users/review/add 
+Content-Type: application/json
+
+{
+    "productId": 1,
+    "rating": 5,
+    "review": "This is a good product"
+}
+
+###
+POST http://localhost:3000/users/review/edit
+Content-Type: application/json
+
+{
+    "reviewId": 1,
+    "rating": 4,
+    "review": "This is a good product"
+}
+
+###
+POST http://localhost:3000/users/review/delete
+Content-Type: application/json
+
+{
+    "reviewId": 1
+}
+
+###
+GET http://localhost:3000/users/review/product/1
+
+###
+GET http://localhost:3000/users/orders/product/DELIVERED/1
+

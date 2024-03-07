@@ -3,3 +3,9 @@ GET http://localhost:3000/catalog/categories
 
 ### 
 GET http://localhost:3000/catalog/product/1
+
+###
+GET http://localhost:3000/catalog/products
+
+###
+GET http://localhost:3000/catalog/product/reviews/1

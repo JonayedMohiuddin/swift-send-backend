@@ -1,0 +1,60 @@
+### 
+POST http://localhost:3000/auth/login
+Content-Type: application/json
+ 
+{ 
+  "userType": "admin",
+  "email": "jonayedmohiuddin@gmail.com",
+  "password": "abc"
+} 
+
+###   
+POST http://localhost:3000/auth/signup
+Content-Type: application/json
+ 
+{
+  "userType": "admin",
+  "name": "Jonayed Mohiuddin",
+  "email": "jonayedadmin@gmail.com",
+  "password": "123"
+}
+
+###
+GET http://localhost:3000/admin/test
+
+###
+GET http://localhost:3000/catalog/categories
+
+### 
+POST http://localhost:3000/admin/addCategory
+Content-Type: application/json
+
+{
+  "name": "Electronics",
+  "description": "All electronics items"
+}
+
+###
+POST http://localhost:3000/admin/removeCategory
+Content-Type: application/json
+
+{
+ "categoryId": 1
+}
+
+###   
+GET http://localhost:3000/admin/orders/PENDING
+
+###   
+GET http://localhost:3000/admin/orders/DELIVERED
+
+###
+POST http://localhost:3000/admin/orders/delivered/1
+
+###
+GET http://localhost:3000/admin/suppliers
+
+###
+POST http://localhost:3000/admin/removeSupplier/1
+
+// make ORDER_ITEM independent from PRODUCT table.
