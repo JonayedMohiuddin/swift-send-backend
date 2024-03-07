@@ -6,21 +6,19 @@ async function index(req, res, next) {
 
     try {
         let query = `
-        SELECT 
-        CI.ID AS CART_ITEM_ID,
+        SELECT  
+        CI.ID AS CART_ITEM_ID, 
         CI.USER_ID,
         CI.PRODUCT_ID,
         CI.QUANTITY,
 
         PR.ID AS PRODUCT_ID,
-        PR.SUPPLIER_ID,
+        PR.SUPPLIER_ID, 
         PR.CATEGORY_ID,
         PR.NAME AS PRODUCT_NAME,
         PR.PRICE,
         PR.IMAGE_URL,
         PR.DISCOUNT,
-        PR.RATING_COUNT,
-        PR.TOTAL_RATING,
 
         S.NAME AS SUPPLIER_NAME
 
@@ -48,12 +46,20 @@ async function cart_add_product_post(req, res, next) {
     const user = req.user;
 
     try {
-        let query = `
+        let query = `SELECT * FROM USERS WHERE ID = ${user.id}`;
+        let result = await databaseQuery(query);
+
+        if(!result.rows.length) {
+            console.log("User not found " + req.user.id);
+            throw new Error();
+        }
+
+        query = `
         BEGIN 
             ADD_OR_UPDATE_CART_ITEM(${user.id}, ${product_id}, ${quantity}); 
         END;`;
         
-        let result = await databaseQuery(query);
+        result = await databaseQuery(query);
 
         if(!result || result.rowsAffected === 0) {
             throw new Error();

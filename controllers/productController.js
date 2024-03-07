@@ -19,16 +19,30 @@ async function products(req, res, next) {
         if (category && category != "all") categorySearchCondition = ` AND C.NAME = '${category}' `;
         if (search) nameSearchCondition = ` AND UPPER(P.NAME) LIKE UPPER('%${search}%') `;
 
-        let query = ` SELECT * 
-                      FROM PRODUCT P 
-                      LEFT JOIN CATEGORY C 
-                      ON P.CATEGORY_ID = C.ID 
-                      
-                      WHERE 1 = 1 
-                      ${categorySearchCondition}
-                      ${nameSearchCondition}
-                      
-                      ORDER BY P.ID OFFSET ${page * product_per_page} ROWS FETCH NEXT ${product_per_page} ROWS ONLY`;
+        let query = ` 
+                        SELECT 
+                        P.*,
+                        (
+                            SELECT NVL(AVG(RR.RATING), 0)
+                            FROM RATING_REVIEW RR
+                            WHERE RR.PRODUCT_ID = P.ID
+                        ) AS RATING,
+                        (
+                            SELECT NVL(COUNT(RR.RATING), 0)
+                            FROM RATING_REVIEW RR
+                            WHERE RR.PRODUCT_ID = P.ID
+                        ) AS RATING_COUNT
+                    
+                        FROM PRODUCT P 
+                        LEFT JOIN CATEGORY C 
+                        ON P.CATEGORY_ID = C.ID 
+                        
+                        WHERE 1 = 1 
+                        ${categorySearchCondition}
+                        ${nameSearchCondition}
+                        
+                        ORDER BY P.ID OFFSET ${page * product_per_page} ROWS FETCH NEXT ${product_per_page} ROWS ONLY
+                    `;
 
         console.log("query:", query);
 
@@ -50,7 +64,22 @@ async function product_detail(req, res, next) {
                 SELECT 
                 C.NAME AS CATEGORY_NAME,
                 S.NAME AS SUPPLIER_NAME,
-                PR.*
+                PR.*,
+                (
+                    SELECT NVL(AVG(RR.RATING), 0)
+                    FROM RATING_REVIEW RR
+                    WHERE RR.PRODUCT_ID = PR.ID 
+                ) AS RATING,
+                (
+                    SELECT NVL(COUNT(RR.RATING), 0)
+                    FROM RATING_REVIEW RR
+                    WHERE RR.PRODUCT_ID = PR.ID
+                ) AS RATING_COUNT,
+                (
+                    SELECT NVL(COUNT(ORD.ID) * SUM(ORD.QUANTITY), 0)
+                    FROM ORDER_ITEM ORD
+                    WHERE ORD.PRODUCT_ID = PR.ID
+                ) AS TOTAL_SOLD
 
                 FROM PRODUCT PR 
                 LEFT JOIN CATEGORY C ON PR.CATEGORY_ID = C.ID
@@ -78,14 +107,16 @@ async function products_count(req, res, next) {
         if (category && category != "all") categorySearchCondition = ` AND C.NAME = '${category}' `;
         if (search) nameSearchCondition = ` AND UPPER(P.NAME) LIKE UPPER('%${search}%') `;
 
-        let query = ` SELECT COUNT(*) AS COUNT
-                      FROM PRODUCT P 
-                      LEFT JOIN CATEGORY C 
-                      ON P.CATEGORY_ID = C.ID 
-                      
-                      WHERE 1 = 1 
-                      ${categorySearchCondition}
-                      ${nameSearchCondition}`;
+        let query = 
+                    ` 
+                        SELECT COUNT(*) AS COUNT
+                        FROM PRODUCT P 
+                        LEFT JOIN CATEGORY C 
+                        ON P.CATEGORY_ID = C.ID 
+                         
+                        WHERE 1 = 1 
+                        ${categorySearchCondition}
+                        ${nameSearchCondition}`;
 
         console.log("query:", query);
 
@@ -102,7 +133,7 @@ async function products_pages(req, res, next) {
     const category = req.params.category; // parameter
     const search = req.query.search; // query string
 
-    const product_per_page = 30;
+    const product_per_page = 30; 
 
     console.log("category:", category);
     console.log("search:", search);
@@ -117,7 +148,7 @@ async function products_pages(req, res, next) {
         let query = ` SELECT COUNT(*) AS COUNT
                       FROM PRODUCT P 
                       LEFT JOIN CATEGORY C 
-                      ON P.CATEGORY_ID = C.ID 
+                      ON P.CATEGORY_ID = C.ID
                       
                       WHERE 1 = 1 
                       ${categorySearchCondition}

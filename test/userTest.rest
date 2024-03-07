@@ -62,7 +62,7 @@ POST http://localhost:3000/users/review/delete
 Content-Type: application/json
 
 {
-    "reviewId": 1
+    "productId": 1
 }
 
 ###

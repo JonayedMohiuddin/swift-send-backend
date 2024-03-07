@@ -36,9 +36,22 @@ async function supplier_products_get(req, res, next) {
                 PR.DESCRIPTION AS PRODUCT_DESCRIPTION,
                 PR.IMAGE_URL AS PRODUCT_IMAGE_URL,
                 PR.DISCOUNT AS PRODUCT_DISCOUNT,
-                PR.RATING_COUNT AS PRODUCT_RATING_COUNT,
-                PR.TOTAL_RATING AS PRODUCT_TOTAL_RATING,
-
+                (
+                    SELECT NVL(AVG(RR.RATING), 0)
+                    FROM RATING_REVIEW RR
+                    WHERE RR.PRODUCT_ID = PR.ID 
+                ) AS RATING,
+                (
+                    SELECT NVL(COUNT(RR.RATING), 0)
+                    FROM RATING_REVIEW RR
+                    WHERE RR.PRODUCT_ID = PR.ID
+                ) AS RATING_COUNT,
+                (
+                    SELECT NVL(COUNT(ORD.ID) * SUM(ORD.QUANTITY), 0)
+                    FROM ORDER_ITEM ORD
+                    WHERE ORD.PRODUCT_ID = PR.ID
+                ) AS TOTAL_SOLD,
+ 
                 CA.ID AS CATEGORY_ID,
                 CA.NAME AS CATEGORY_NAME,
                 CA.DESCRIPTION AS CATEGORY_DESCRIPTION,
@@ -169,7 +182,6 @@ async function get_all_orders_status(req, res, next) {
                         SO.ADDRESS AS ADDRESS,
                         SO.STATUS AS STATUS,
                         SO.CREATED_AT AS CREATED_AT,
-
                         (
                             SELECT NAME
                             FROM USERS
@@ -186,8 +198,21 @@ async function get_all_orders_status(req, res, next) {
                         PR.PRICE AS PRICE,
                         PR.IMAGE_URL AS IMAGE_URL,
                         PR.DISCOUNT AS DISCOUNT,
-                        PR.RATING_COUNT AS RATING_COUNT,
-                        PR.TOTAL_RATING AS TOTAL_RATING
+                        (
+                            SELECT NVL(AVG(RR.RATING), 0)
+                            FROM RATING_REVIEW RR
+                            WHERE RR.PRODUCT_ID = PR.ID 
+                        ) AS RATING,
+                        (
+                            SELECT NVL(COUNT(RR.RATING), 0)
+                            FROM RATING_REVIEW RR
+                            WHERE RR.PRODUCT_ID = PR.ID
+                        ) AS RATING_COUNT,
+                        (
+                            SELECT NVL(COUNT(ORD.ID) * SUM(ORD.QUANTITY), 0)
+                            FROM ORDER_ITEM ORD
+                            WHERE ORD.PRODUCT_ID = PR.ID
+                        ) AS TOTAL_SOLD 
 
                         FROM SUPPLIER_ORDERS SO 
                         JOIN ORDER_ITEM OI
@@ -248,8 +273,6 @@ async function get_all_orders(req, res, next) {
                         PR.PRICE AS PRICE,
                         PR.IMAGE_URL AS IMAGE_URL,
                         PR.DISCOUNT AS DISCOUNT,
-                        PR.RATING_COUNT AS RATING_COUNT,
-                        PR.TOTAL_RATING AS TOTAL_RATING,
 
                         (
                             SELECT NAME

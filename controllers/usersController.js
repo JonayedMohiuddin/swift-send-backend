@@ -256,21 +256,21 @@ async function edit_review_post(req, res, next) {
 async function delete_review_post(req, res, next) {
     try {
         let user_id = req.user.id;
-        let review_id = req.body.reviewId;
+        let product_id = req.body.productId;
 
-        let query = `SELECT * FROM RATING_REVIEW WHERE USER_ID = :userId AND ID = :reviewId`;
+        let query = `SELECT * FROM RATING_REVIEW WHERE USER_ID = :userId AND PRODUCT_ID = :productId`;
         let binds = {
             userId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: user_id },
-            reviewId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: review_id },
+            productId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: product_id },
         };
         let result = await databaseQuery(query, binds);
 
         if (result.rows.length === 0) return res.status(400).json({ errorMessage: "Review does not exist" });
 
-        query = `DELETE FROM RATING_REVIEW WHERE USER_ID = :userId AND ID = :reviewId`;
+        query = `DELETE FROM RATING_REVIEW WHERE USER_ID = :userId AND PRODUCT_ID = :productId`;
         binds = {
             userId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: user_id },
-            reviewId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: review_id },
+            productId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: product_id },
         };
         result = await databaseQuery(query, binds);
 

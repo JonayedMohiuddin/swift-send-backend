@@ -79,9 +79,7 @@ async function get_orders(req, res, next) {
                         PR.CATEGORY_ID AS CATEGORY_ID,
                         PR.PRICE AS PRICE,
                         PR.IMAGE_URL AS IMAGE_URL,
-                        PR.DISCOUNT AS DISCOUNT,
-                        PR.RATING_COUNT AS RATING_COUNT,
-                        PR.TOTAL_RATING AS TOTAL_RATING
+                        PR.DISCOUNT AS DISCOUNT
 
                         FROM SWIFT_SEND_WAREHOUSE_ITEM SSWI
                         JOIN ORDER_ITEM OI ON SSWI.ORDER_ITEM_ID = OI.ID
@@ -124,7 +122,7 @@ async function get_suppliers(req, res, next) {
     }
 } 
   
-// URL : '/admin/removeSupplier/:id'
+// URL : '/admin/removeSupplier/:id' 
 async function remove_supplier(req, res, next) {
     try {
         let query = `DELETE FROM SUPPLIER WHERE ID = ${req.params.id}`;
@@ -135,7 +133,7 @@ async function remove_supplier(req, res, next) {
         return res.status(500).send("Error fetching suppliers");
     }
 }
-
+ 
 module.exports = {
     index,
     add_category_post,
@@ -144,4 +142,4 @@ module.exports = {
     deliver_order_post,
     get_suppliers,
     remove_supplier
-};
+}; 

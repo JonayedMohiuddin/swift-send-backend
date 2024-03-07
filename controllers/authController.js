@@ -91,7 +91,7 @@ async function login(req, res) {
         });
 
         const hashedPassword = result.outBinds.hashValue;
-
+ 
         if (user.PASSWORD === hashedPassword) {
             let userTypeTemp = userType;
             const accessToken = generateAccessToken({ id: user.ID, name: user.NAME, email: user.EMAIL, userType: userTypeTemp });
@@ -100,7 +100,7 @@ async function login(req, res) {
             return res.status(200).json({ accessToken: accessToken, message: "Success", userId: user.ID });
         } else {
             return res.status(401).json({ errorMessage: "Invalid password." });
-        }
+        } 
 
         // USING BCRYPT INSTEAD OF ORACLE DB HASHING FUNCTION TO HASH PASSWORDS
         // if (await bcrypt.compare(req.body.password, user.PASSWORD)) {
