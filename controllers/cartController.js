@@ -12,7 +12,7 @@ async function index(req, res, next) {
         CI.PRODUCT_ID,
         CI.QUANTITY,
 
-        PR.ID AS PRODUCT_ID,
+        PR.ID AS PRODUCT_ID, 
         PR.SUPPLIER_ID, 
         PR.CATEGORY_ID,
         PR.NAME AS PRODUCT_NAME,
@@ -20,7 +20,13 @@ async function index(req, res, next) {
         PR.IMAGE_URL,
         PR.DISCOUNT,
 
-        S.NAME AS SUPPLIER_NAME
+        S.NAME AS SUPPLIER_NAME,
+
+        (
+            SELECT COUNT(*)
+            FROM WISH_LIST WL
+            WHERE WL.USER_ID = ${user.id} AND WL.PRODUCT_ID = PR.ID
+        ) AS WISH_LIST_COUNT
 
         FROM CART_ITEM CI
         JOIN PRODUCT PR ON CI.PRODUCT_ID = PR.ID

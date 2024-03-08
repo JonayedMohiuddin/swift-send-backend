@@ -171,9 +171,9 @@ async function get_reviews(req, res, next) {
     }
 }
 
-// URL : /users/review/product/:id 
+// URL : /users/review/product/:id
 async function get_review_by_product_id(req, res, next) {
-    let productId = req.params.id; 
+    let productId = req.params.id;
     let userId = req.user.id;
     try {
         let query = `SELECT * FROM RATING_REVIEW WHERE USER_ID = ${userId} AND PRODUCT_ID = ${productId}`;
@@ -223,21 +223,21 @@ async function add_review_post(req, res, next) {
 async function edit_review_post(req, res, next) {
     try {
         let user_id = req.user.id;
-        let { reviewId, rating, review } = req.body;
+        let { productId, rating, review } = req.body;
 
-        let query = `SELECT * FROM RATING_REVIEW WHERE USER_ID = :userId AND ID = :reviewId`;
+        let query = `SELECT * FROM RATING_REVIEW WHERE USER_ID = :userId AND PRODUCT_ID = :productId`;
         let binds = {
             userId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: user_id },
-            reviewId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: reviewId },
+            productId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: productId },
         };
         let result = await databaseQuery(query, binds);
 
         if (result.rows.length === 0) return res.status(400).json({ errorMessage: "Review does not exist" });
 
-        query = `UPDATE RATING_REVIEW SET RATING = :rating, REVIEW = :review WHERE USER_ID = :userId AND ID = :reviewId`;
+        query = `UPDATE RATING_REVIEW SET RATING = :rating, REVIEW = :review WHERE USER_ID = :userId AND PRODUCT_ID = :productId`;
         binds = {
             userId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: user_id },
-            reviewId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: reviewId },
+            productId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: productId },
             rating: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: rating },
             review: { dir: oracledb.BIND_IN, type: oracledb.STRING, val: review },
         };
@@ -283,6 +283,113 @@ async function delete_review_post(req, res, next) {
     }
 }
 
+async function get_wishlist(req, res, next) {
+    let userId = req.user.id;
+    try {
+        let query = ` 
+                        SELECT * 
+                        FROM WISH_LIST W
+                        JOIN PRODUCT P
+                        ON W.PRODUCT_ID = P.ID
+                        WHERE USER_ID = :userId
+                    `;
+        let binds = {
+            userId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: userId },
+        };
+        let result = await databaseQuery(query, binds);
+
+        return res.status(200).json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ errorMessage: err.message });
+    }
+}
+
+async function get_wishlist_by_id(req, res, next) {
+    let userId = parseInt(req.user.id);
+    let productId = parseInt(req.params.id);
+    try {
+        let query = ` 
+                        SELECT *   
+                        FROM WISH_LIST W
+                        JOIN PRODUCT P 
+                        ON W.PRODUCT_ID = P.ID
+                        WHERE USER_ID = :userId
+                        AND PRODUCT_ID = :productId
+                    `;
+        let binds = {
+            userId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: userId },
+            productId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: productId },
+        };
+        let result = await databaseQuery(query, binds);
+
+        return res.status(200).json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ errorMessage: err.message });
+    }
+}
+
+async function add_wishlist_post(req, res, next) {
+    let userId = req.user.id;
+    let productId = req.body.productId;
+
+    try {
+        let query = `SELECT * FROM WISH_LIST WHERE USER_ID = :userId AND PRODUCT_ID = :productId`;
+        let binds = {
+            userId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: userId },
+            productId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: productId },
+        };
+        let result = await databaseQuery(query, binds);
+
+        if (result.rows.length > 0) return res.status(400).json({ errorMessage: "Product already in wishlist" });
+
+        query = `INSERT INTO WISH_LIST (USER_ID, PRODUCT_ID) VALUES (:userId, :productId)`;
+        binds = {
+            userId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: userId },
+            productId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: productId },
+        };
+        result = await databaseQuery(query, binds);
+
+        if (result.rowsAffected === 0) return res.status(500).json({ errorMessage: "Error while adding to wishlist" });
+
+        return res.status(200).json({ message: "Added to wishlist successfully" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ errorMessage: err.message });
+    }
+}
+
+async function remove_wishlist_post(req, res, next) {
+    let userId = req.user.id;
+    let productId = req.body.productId;
+
+    try {
+        let query = `SELECT * FROM WISH_LIST WHERE USER_ID = :userId AND PRODUCT_ID = :productId`;
+        let binds = {
+            userId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: userId },
+            productId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: productId },
+        };
+        let result = await databaseQuery(query, binds);
+
+        if (result.rows.length === 0) return res.status(400).json({ errorMessage: "Product not in wishlist" });
+
+        query = `DELETE FROM WISH_LIST WHERE USER_ID = :userId AND PRODUCT_ID = :productId`;
+        binds = {
+            userId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: userId },
+            productId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: productId },
+        };
+        result = await databaseQuery(query, binds);
+
+        if (result.rowsAffected === 0) return res.status(500).json({ errorMessage: "Error while removing from wishlist" });
+
+        return res.status(200).json({ message: "Removed from wishlist successfully" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ errorMessage: err.message });
+    }
+}
+
 module.exports = {
     get_all_orders,
     get_order_by_product_id,
@@ -295,4 +402,8 @@ module.exports = {
     edit_review_post,
     delete_review_post,
     get_review_by_product_id,
+    get_wishlist,
+    get_wishlist_by_id,
+    add_wishlist_post,
+    remove_wishlist_post,
 };

@@ -62,9 +62,11 @@ async function product_detail(req, res, next) {
     try {
         let query = `
                 SELECT 
+                
                 C.NAME AS CATEGORY_NAME,
                 S.NAME AS SUPPLIER_NAME,
                 PR.*,
+
                 (
                     SELECT NVL(AVG(RR.RATING), 0)
                     FROM RATING_REVIEW RR
@@ -76,9 +78,10 @@ async function product_detail(req, res, next) {
                     WHERE RR.PRODUCT_ID = PR.ID
                 ) AS RATING_COUNT,
                 (
-                    SELECT NVL(COUNT(ORD.ID) * SUM(ORD.QUANTITY), 0)
+                    SELECT NVL(COUNT(ORD.QUANTITY), 0)
                     FROM ORDER_ITEM ORD
-                    WHERE ORD.PRODUCT_ID = PR.ID
+                    WHERE ORD.PRODUCT_ID = PR.ID 
+                    AND ORD.STATUS <> 'CANCELED'
                 ) AS TOTAL_SOLD
 
                 FROM PRODUCT PR 

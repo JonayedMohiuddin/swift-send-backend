@@ -29,4 +29,12 @@ router.post("/review/delete", usersController.delete_review_post);
 
 router.get("/review/product/:id", usersController.get_review_by_product_id);
 
+router.get("/wishlist", usersController.get_wishlist);
+
+router.get("/wishlist/:id", usersController.get_wishlist_by_id);
+
+router.post("/wishlist/add", usersController.add_wishlist_post);
+
+router.post("/wishlist/remove", usersController.remove_wishlist_post);
+
 module.exports = router;

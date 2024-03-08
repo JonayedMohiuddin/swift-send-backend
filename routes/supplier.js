@@ -2,7 +2,7 @@ const router = require("express").Router();
 
 const supplierController = require("../controllers/supplierController");
 
-// URL = '/supplier'
+// URL = '/supplier' 
 
 router.get("/all", supplierController.supplier_all_get);
 

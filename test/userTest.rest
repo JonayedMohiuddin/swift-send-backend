@@ -1,4 +1,4 @@
-### 
+###  
 POST http://localhost:3000/auth/login
 Content-Type: application/json
  
@@ -52,7 +52,7 @@ POST http://localhost:3000/users/review/edit
 Content-Type: application/json
 
 {
-    "reviewId": 1,
+    "productId": 1,
     "rating": 4,
     "review": "This is a good product"
 }
@@ -70,4 +70,26 @@ GET http://localhost:3000/users/review/product/1
 
 ###
 GET http://localhost:3000/users/orders/product/DELIVERED/1
+
+### 
+GET http://localhost:3000/users/wishlist
+
+###
+GET http://localhost:3000/users/wishlist/1
+
+###
+POST http://localhost:3000/users/wishlist/add
+Content-Type: application/json
+
+{
+    "productId": 1
+}
+
+###
+POST http://localhost:3000/users/wishlist/remove
+Content-Type: application/json
+
+{
+    "productId": 1
+}
 

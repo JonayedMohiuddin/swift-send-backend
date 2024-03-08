@@ -1,8 +1,2 @@
-### 
-POST http://localhost:3000/auth/login
-Content-Type: application/json
- 
-{ "email": "test@gmail.com", "password": "test" }
-
 ###
 GET http://localhost:3000/catalog/products
