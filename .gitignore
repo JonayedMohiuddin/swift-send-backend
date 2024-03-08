@@ -5,7 +5,7 @@ node_modules/
 *.log
 
 # Ignore .env file which may contain sensitive information
-.env
+# .env
 
 # Ignore OS generated files
 .DS_Store
