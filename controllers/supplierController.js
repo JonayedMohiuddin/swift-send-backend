@@ -344,6 +344,9 @@ async function ship_product_post(req, res, next) {
         if (result.rows.length === 0) {
             return res.status(400).json({ errorMessage: "Order item does not exist" });
         }
+        if(result.rows[0].STATUS === 'SHIPPED') {
+            return res.status(400).json({ errorMessage: "Order item already shipped" });
+        }
 
         // query = `DELETE FROM SUPPLIER_PENDING_ORDERS WHERE SUPPLIER_ID = ${supplierId} AND ORDER_ITEM_ID = ${orderItemId}`;
         query = `UPDATE SUPPLIER_ORDERS SET STATUS = 'SHIPPED' WHERE ID = ${supplierOrderId} AND SUPPLIER_ID = ${supplierId}`;

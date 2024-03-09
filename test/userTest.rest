@@ -31,7 +31,9 @@ Content-Type: application/json
 
 {
     "productId": 1,
-    "quantity": 5
+    "quantity": 5,
+    "address": "Dhaka, Bangladesh",
+    "phone": "01838380474"
 }
 
 ###    

@@ -72,11 +72,15 @@ Content-Type: application/json
 async function add_order_post(req, res, next) {
     try {
         let user_id = req.user.id;
+        console.log("User id : " + user_id);
         let order_id = null;
+        let { address, phone } = req.body;
 
-        let query = `INSERT INTO ORDERS (USER_ID) VALUES (:userId) RETURNING ID INTO :orderId`;
+        let query = `INSERT INTO ORDERS (USER_ID, ADDRESS, PHONE) VALUES (:userId, :address, :phone) RETURNING ID INTO :orderId`;
         let binds = {
             userId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: user_id },
+            address: { dir: oracledb.BIND_IN, type: oracledb.STRING, val: address },
+            phone: { dir: oracledb.BIND_IN, type: oracledb.STRING, val: phone },
             orderId: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
         };
         let result = await databaseQuery(query, binds);
@@ -117,13 +121,15 @@ async function add_order_post(req, res, next) {
 async function add_orders_from_cart_post(req, res, next) {
     try {
         let user_id = req.user.id;
+        let { address, phone } = req.body;
         // let address = req.body.address;
 
         // let query = `BEGIN ADD_ORDERS_FROM_CART(:userId, :address); END;`;
-        let query = `BEGIN ADD_ORDERS_FROM_CART(:userId); END;`;
+        let query = `BEGIN ADD_ORDERS_FROM_CART(:userId, :address, :phone); END;`;
         let binds = {
             userId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: user_id },
-            // address: { dir: oracledb.BIND_IN, type: oracledb.STRING, val: address },
+            address: { dir: oracledb.BIND_IN, type: oracledb.STRING, val: address },
+            phone: { dir: oracledb.BIND_IN, type: oracledb.STRING, val: phone },
         };
 
         let result = await databaseQuery(query, binds);
