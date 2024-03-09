@@ -7,7 +7,7 @@ const categoryController = require("../controllers/categoryController");
 const { route } = require("./users");
 
 // URL = '/catalog'
-
+ 
 // GET request for count of all Products.
 router.get("/products/count/:category", productController.products_count);
 

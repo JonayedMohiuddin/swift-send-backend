@@ -60,6 +60,14 @@ Content-Type: application/json
   "productId": "2" 
 }
 
+###
+POST http://localhost:3000/supplier/restoreProduct
+Content-Type: application/json
+ 
+{ 
+  "productId": "2" 
+}
+
 ###   
 GET http://localhost:3000/supplier/orders
 
@@ -69,4 +77,21 @@ GET http://localhost:3000/supplier/orders/PENDING
 ###
 POST http://localhost:3000/supplier/orders/shipped/4
 
+###
+GET http://localhost:3000/supplier/about
+
+### 
+POST http://localhost:3000/supplier/update 
+Content-Type: application/json
  
+{ 
+  "name": "Jonayed Mohiuddin",
+  "email": "test@gmail.com",
+  "address": "Dhaka, Bangladesh",
+  "imageUrl": "images/no-profile-image.jpg",
+  "description": "Hello, I am Jonayed Mohiuddin"
+}
+
+###
+POST http://localhost:3000/supplier/remove
+

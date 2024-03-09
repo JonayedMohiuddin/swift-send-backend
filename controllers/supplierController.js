@@ -1,4 +1,5 @@
 let { databaseQuery } = require("../backend/databaseQuery");
+const oracledb = require("oracledb");
 
 async function supplier_all_get(req, res, next) {
     try {
@@ -36,6 +37,7 @@ async function supplier_products_get(req, res, next) {
                 PR.DESCRIPTION AS PRODUCT_DESCRIPTION,
                 PR.IMAGE_URL AS PRODUCT_IMAGE_URL,
                 PR.DISCOUNT AS PRODUCT_DISCOUNT,
+                PR.IS_DELETED AS IS_DELETED,
                 (
                     SELECT NVL(AVG(RR.RATING), 0)
                     FROM RATING_REVIEW RR
@@ -99,6 +101,28 @@ async function add_product_post(req, res, next) {
     }
 }
 
+async function restore_product_post(req, res, next) {
+    const { productId } = req.body;
+    const supplier = req.user;
+
+    try {
+        let query = `SELECT * FROM PRODUCT WHERE ID = ${productId}`;
+        let result = await databaseQuery(query);
+        if (result.rows.length === 0) {
+            return res.status(400).json({ errorMessage: "Product does not exist" });
+        } else if (result.rows[0].SUPPLIER_ID !== req.user.id) {
+            return res.status(400).json({ errorMessage: "You are not authorized to restore this product" });
+        }
+
+        query = `UPDATE PRODUCT SET IS_DELETED = 0 WHERE ID = ${productId}`;
+        result = await databaseQuery(query);
+        res.status(200).json({ message: "Product restored successfully" });
+    } catch (error) {
+        console.error("Error in restore_product_post: ", error);
+        res.status(500).json({ errorMessage: "Internal Server Error" });
+    }
+}
+
 async function remove_product_post(req, res, next) {
     const { productId } = req.body;
     const supplier = req.user;
@@ -110,9 +134,11 @@ async function remove_product_post(req, res, next) {
             return res.status(400).json({ errorMessage: "Product does not exist" });
         } else if (result.rows[0].SUPPLIER_ID !== req.user.id) {
             return res.status(400).json({ errorMessage: "You are not authorized to remove this product" });
+        } else if (result.rows[0].IS_DELETED === 1) {
+            return res.status(400).json({ errorMessage: "Product already removed" });
         }
 
-        query = `DELETE FROM PRODUCT WHERE ID = ${productId} AND SUPPLIER_ID = ${supplier.id}`;
+        query = `UPDATE PRODUCT SET IS_DELETED = 1 WHERE ID = ${productId}`;
         result = await databaseQuery(query);
         res.status(200).json({ message: "Product removed successfully" });
     } catch (error) {
@@ -222,11 +248,10 @@ async function get_all_orders_status(req, res, next) {
                         WHERE ${supplierId} = SO.SUPPLIER_ID
                         AND SO.STATUS = UPPER('${status}')  
                     `;
-                
-        if(status === 'shipped') {
+
+        if (status === "shipped") {
             query += `ORDER BY OI.LAST_UPDATED_ON ASC, OI.ID ASC`;
-        }
-        else {
+        } else {
             query += `ORDER BY OI.LAST_UPDATED_ON DESC, OI.ID ASC`;
         }
 
@@ -331,9 +356,84 @@ async function ship_product_post(req, res, next) {
     }
 }
 
+async function supplier_about_get(req, res, next) {
+    try {
+        const query = `SELECT * FROM SUPPLIER WHERE ID = ${req.user.id}`;
+        const result = await databaseQuery(query);
+        console.log("result: ", result.rows);
+        res.json(result.rows);
+    } catch (error) {
+        console.error("Error in supplier_profile_get: ", error);
+        res.status(500).json({ errorMessage: "Internal Server Error" });
+    }
+}
+
+async function update_about_post(req, res, next) {
+    const { name, email, address, imageUrl, description } = req.body;
+    const supplier = req.user;
+
+    try {
+        let query = `UPDATE SUPPLIER SET NAME = '${name}', EMAIL = '${email}', ADDRESS = '${address}', IMAGE_URL = '${imageUrl}', DESCRIPTION = '${description}' WHERE ID = ${supplier.id}`;
+        let result = await databaseQuery(query);
+        res.status(200).json({ message: "Profile updated successfully" });
+    } catch (error) {
+        console.error("Error in update_about_post: ", error);
+        res.status(500).json({ errorMessage: "Internal Server Error" });
+    }
+}
+
+/*
+CREATE OR REPLACE PROCEDURE REMOVE_SUPPLIER(SUPPLIER_ID_PARAM IN NUMBER, MESSAGE OUT VARCHAR2, STATUS OUT NUMBER) IS
+	SUPPLIER_ID_VAR NUMBER;
+BEGIN
+    STATUS := -1;
+    SELECT ID INTO SUPPLIER_ID_VAR FROM SUPPLIER WHERE ID = SUPPLIER_ID_PARAM;
+
+    FOR ITEM IN (SELECT * FROM PRODUCT WHERE SUPPLIER_ID = SUPPLIER_ID_VAR) LOOP
+        UPDATE PRODUCT SET IS_DELETED = 1 WHERE ID = ITEM.ID;
+    END LOOP;
+    MESSAGE := 'PRODUCTS DELETED SUCCESSFULLY!!';
+
+    DELETE FROM SUPPLIER WHERE ID = SUPPLIER_ID_VAR;
+    MESSAGE := 'SUPPLIER REMOVED SUCCESSFULLY!!';
+    STATUS := 0;
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        MESSAGE := 'NO SUPPLIER WITH GIVEN ID EXISTS!!';
+        STATUS := -1;
+        RETURN;
+END;
+/
+*/
+
+async function remove_supplier_post(req, res, next) {
+    const supplierId = req.user.id;
+
+    try {
+        let query = `BEGIN REMOVE_SUPPLIER(${supplierId}, :message, :status); END;`;
+        let binds = {
+            message: { dir: oracledb.BIND_OUT, type: oracledb.STRING },
+            status: { dir: oracledb.BIND_OUT, type: oracledb.NUMBER },
+        };
+        let result = await databaseQuery(query, binds);
+
+        res.clearCookie("token");
+
+        if (result.outBinds.status === 0) {
+            return res.status(200).json({ message: result.outBinds.message });
+        } else {
+            return res.status(400).json({ errorMessage: result.outBinds.message });
+        }
+    } catch (error) {
+        console.error("Error in remove_supplier_post: ", error);
+        res.status(500).json({ errorMessage: "Internal Server Error" });
+    }
+}
+
 module.exports = {
     add_product_post,
     remove_product_post,
+    restore_product_post,
     update_product_post,
     supplier_details_get,
     supplier_all_get,
@@ -341,4 +441,7 @@ module.exports = {
     get_all_orders,
     get_all_orders_status,
     ship_product_post,
+    supplier_about_get,
+    update_about_post,
+    remove_supplier_post,
 };

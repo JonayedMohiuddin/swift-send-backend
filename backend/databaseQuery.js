@@ -35,9 +35,10 @@ async function closeDatabaseConnection() {
     }
 }
 
-async function databaseQuery(query, params = [], options = {}) {
+async function databaseQuery_connection_based(query, params = [], options = {}) {
     try {
         if (!connection || !(await connection.ping())) {
+            await closeDatabaseConnection();
             await establishDatabaseConnection();
         }
 
@@ -57,7 +58,30 @@ async function databaseQuery(query, params = [], options = {}) {
     }
 }
 
+async function databaseQuery(query, params = [], options = {}) {
+    try {
+        if (!pool) {
+            await createPool();
+        }
 
+        let connection = await pool.getConnection();
+        let result = await connection.execute(query, params, options);
+        connection.close(); // Close the connection after use
+
+        if (result.rows) {
+            console.log("Query Result Returned : ", result.rows.length, " rows");
+        } else if (result.rowsAffected) {
+            console.log("Rows Affected : ", result.rowsAffected);
+        }
+
+        return result;
+    } catch (error) {
+        console.error("Couldn't execute DB query:", error);
+        await closePool(); // Close the current pool
+        await createPool(); // Recreate the pool
+        return null;
+    }
+}
 
 // POOLING FOR MULTIPLE CONNECTIONS TO ORACLE DATABASE
 

@@ -31,7 +31,19 @@ Content-Type: application/json
 
 {
   "name": "Electronics",
-  "description": "All electronics items"
+  "description": "All electronics items",
+  "imageUrl": "test"
+}
+
+###
+POST http://localhost:3000/admin/updateCategory
+Content-Type: application/json
+
+{
+  "categoryId": 1,
+  "name": "Electronicss",
+  "description": "All electronics items",
+  "imageUrl": "test"
 }
 
 ###

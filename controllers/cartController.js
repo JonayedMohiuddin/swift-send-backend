@@ -18,7 +18,7 @@ async function index(req, res, next) {
         PR.NAME AS PRODUCT_NAME,
         PR.PRICE,
         PR.IMAGE_URL,
-        PR.DISCOUNT,
+        PR.DISCOUNT, 
 
         S.NAME AS SUPPLIER_NAME,
 

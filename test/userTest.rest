@@ -8,6 +8,17 @@ Content-Type: application/json
   "password": "abc"
 } 
 
+###   
+POST http://localhost:3000/auth/signup
+Content-Type: application/json
+ 
+{
+  "userType": "users",
+  "name": "Jim Doe",
+  "email": "jonayedmohiuddin@gmail.com",
+  "password": "abc"
+}
+
 ###
 GET http://localhost:3000/users/orders
 
@@ -93,3 +104,20 @@ Content-Type: application/json
     "productId": 1
 }
 
+### 
+GET http://localhost:3000/users/about
+
+### 
+POST http://localhost:3000/users/update
+Content-Type: application/json
+
+{
+    "name": "Jonayed Mohiuddin",
+    "email": "jonayedmohiuddin@gmail.com",
+    "phone": "01838380474",
+    "address": "Dhaka, Bangladesh",
+    "imageUrl": "test"
+}
+
+### 
+POST http://localhost:3000/users/delete

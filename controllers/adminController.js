@@ -14,12 +14,12 @@ async function add_category_post(req, res, next) {
         if (!name) return res.status(400).send({ errorMessage: "Category name is required" });
         if (!description) return res.status(400).send({ errorMessage: "Category description is required" });
         // if (!imageUrl) return res.status(400).send({ errorMessage: "Category image url is required" });
-        if(!imageUrl) imageUrl = "/images/no-product-image.jpg"
+        if (!imageUrl) imageUrl = "/images/no-product-image.jpg";
 
         let query = `SELECT * FROM CATEGORY WHERE NAME = '${name}'`;
         let result = await databaseQuery(query);
         if (result.rows.length > 0) return res.status(400).send({ errorMessage: "Category already exists" });
-        
+
         query = `INSERT INTO CATEGORY (NAME, DESCRIPTION, IMAGE_URL) VALUES ('${name}', '${description}', '${imageUrl}')`;
         result = await databaseQuery(query);
         if (result.rowsAffected === 0) throw new Error("Error adding category");
@@ -27,6 +27,35 @@ async function add_category_post(req, res, next) {
     } catch (err) {
         console.error(err);
         return res.status(500).send({ errorMessage: "Error adding category" });
+    }
+}
+
+async function update_category_post(req, res, next) {
+    let { categoryId, name, description, imageUrl } = req.body;
+
+    try {
+        if (!categoryId) return res.status(400).send({ errorMessage: "Category ID is required" });
+
+        let query = `SELECT * FROM CATEGORY WHERE ID = ${categoryId}`;
+        let result = await databaseQuery(query);
+        if (result.rows.length === 0) return res.status(400).send({ errorMessage: "Category does not exist" });
+
+        query = `SELECT * FROM CATEGORY WHERE NAME = '${name}' AND ID != ${categoryId}`;
+        result = await databaseQuery(query);
+        if (result.rows.length > 0) return res.status(400).send({ errorMessage: "The name already exists" });
+
+        query = `UPDATE CATEGORY SET`;
+        if (name) query += ` NAME = '${name}',`;
+        if (description) query += ` DESCRIPTION = '${description}',`;
+        if (imageUrl) query += ` IMAGE_URL = '${imageUrl}',`;
+        query = query.slice(0, -1);
+        query += ` WHERE ID = ${categoryId}`;
+        result = await databaseQuery(query);
+        if (result.rowsAffected === 0) throw new Error("Error updating category");
+        return res.json({ message: "Category updated successfully" });
+    } catch (err) {
+        console.error(err);
+        return res.status(500).send({ errorMessage: "Error updating category" });
     }
 }
 
@@ -51,14 +80,14 @@ async function remove_category_post(req, res, next) {
     }
 }
 
-// URL : '/admin/orders/:status' 
+// URL : '/admin/orders/:status'
 async function get_orders(req, res, next) {
     let status = req.params.status;
 
     try {
-        if(!status) return res.status(400).send("Status is required");
-        if(status !== "PENDING" && status !== "DELIVERED") return res.status(400).send("Invalid status");
-        
+        if (!status) return res.status(400).send("Status is required");
+        if (status !== "PENDING" && status !== "DELIVERED") return res.status(400).send("Invalid status");
+
         let query = ` 
                         SELECT 
                         SSWI.ID AS SSWI_ID,
@@ -100,7 +129,7 @@ async function deliver_order_post(req, res, next) {
 
     try {
         if (!id) return res.status(400).send("Order ID is required");
-    
+
         let query = `UPDATE SWIFT_SEND_WAREHOUSE_ITEM SET STATUS = 'DELIVERED' WHERE ID = ${id}`;
         await databaseQuery(query);
         return res.json({ message: "Order delivered successfully" });
@@ -120,26 +149,27 @@ async function get_suppliers(req, res, next) {
         console.error(err);
         return res.status(500).send("Error fetching suppliers");
     }
-} 
-  
-// URL : '/admin/removeSupplier/:id' 
+}
+
+// URL : '/admin/removeSupplier/:id'
 async function remove_supplier(req, res, next) {
     try {
         let query = `DELETE FROM SUPPLIER WHERE ID = ${req.params.id}`;
         let result = await databaseQuery(query);
         return res.json(result.rows);
-    } catch (err) { 
+    } catch (err) {
         console.error(err);
         return res.status(500).send("Error fetching suppliers");
     }
 }
- 
+
 module.exports = {
     index,
     add_category_post,
+    update_category_post,
     remove_category_post,
     get_orders,
     deliver_order_post,
     get_suppliers,
-    remove_supplier
-}; 
+    remove_supplier,
+};

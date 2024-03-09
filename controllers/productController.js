@@ -22,6 +22,7 @@ async function products(req, res, next) {
         let query = ` 
                         SELECT 
                         P.*,
+                        C.NAME AS CATEGORY_NAME,
                         (
                             SELECT NVL(AVG(RR.RATING), 0)
                             FROM RATING_REVIEW RR
@@ -38,6 +39,7 @@ async function products(req, res, next) {
                         ON P.CATEGORY_ID = C.ID 
                         
                         WHERE 1 = 1 
+                        AND P.IS_DELETED = 0
                         ${categorySearchCondition}
                         ${nameSearchCondition}
                         
@@ -118,6 +120,7 @@ async function products_count(req, res, next) {
                         ON P.CATEGORY_ID = C.ID 
                          
                         WHERE 1 = 1 
+                        AND P.IS_DELETED = 0
                         ${categorySearchCondition}
                         ${nameSearchCondition}`;
 
@@ -149,13 +152,14 @@ async function products_pages(req, res, next) {
         if (search) nameSearchCondition = ` AND UPPER(P.NAME) LIKE UPPER('%${search}%') `;
 
         let query = ` SELECT COUNT(*) AS COUNT
-                      FROM PRODUCT P 
-                      LEFT JOIN CATEGORY C 
-                      ON P.CATEGORY_ID = C.ID
-                      
-                      WHERE 1 = 1 
-                      ${categorySearchCondition}
-                      ${nameSearchCondition}`;
+                        FROM PRODUCT P 
+                        LEFT JOIN CATEGORY C 
+                        ON P.CATEGORY_ID = C.ID
+
+                        WHERE 1 = 1 
+                        AND P.IS_DELETED = 0
+                        ${categorySearchCondition}
+                        ${nameSearchCondition}`;
 
         console.log("query:", query);
 
@@ -176,9 +180,10 @@ async function get_reviews(req, res, next) {
         let query = `
                         SELECT * 
                         FROM RATING_REVIEW RR 
-                        JOIN USERS U
+                        LEFT JOIN USERS U
                         ON RR.USER_ID = U.ID
                         WHERE PRODUCT_ID = ${req.params.id}
+                        ORDER BY RR.LAST_UPDATED_ON DESC
                     `;
         const result = await databaseQuery(query);
 

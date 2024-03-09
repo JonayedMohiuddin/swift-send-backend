@@ -176,7 +176,12 @@ async function get_review_by_product_id(req, res, next) {
     let productId = req.params.id;
     let userId = req.user.id;
     try {
-        let query = `SELECT * FROM RATING_REVIEW WHERE USER_ID = ${userId} AND PRODUCT_ID = ${productId}`;
+        let query = `
+                        SELECT * 
+                        FROM RATING_REVIEW 
+                        WHERE USER_ID = ${userId}  
+                        AND PRODUCT_ID = ${productId}
+                    `;
         let result = await databaseQuery(query);
 
         return res.status(200).json(result.rows);
@@ -287,7 +292,19 @@ async function get_wishlist(req, res, next) {
     let userId = req.user.id;
     try {
         let query = ` 
-                        SELECT * 
+                        SELECT 
+                        p.*,
+                        (
+                            SELECT NVL(AVG(RR.RATING), 0)
+                            FROM RATING_REVIEW RR
+                            WHERE RR.PRODUCT_ID = P.ID
+                        ) AS RATING,
+                        (
+                            SELECT NVL(COUNT(RR.RATING), 0)
+                            FROM RATING_REVIEW RR
+                            WHERE RR.PRODUCT_ID = P.ID
+                        ) AS RATING_COUNT
+
                         FROM WISH_LIST W
                         JOIN PRODUCT P
                         ON W.PRODUCT_ID = P.ID
@@ -310,7 +327,7 @@ async function get_wishlist_by_id(req, res, next) {
     let productId = parseInt(req.params.id);
     try {
         let query = ` 
-                        SELECT *   
+                        SELECT *
                         FROM WISH_LIST W
                         JOIN PRODUCT P 
                         ON W.PRODUCT_ID = P.ID
@@ -390,6 +407,71 @@ async function remove_wishlist_post(req, res, next) {
     }
 }
 
+async function get_user_about(req, res, next) {
+    let userId = req.user.id;
+    try {
+        let query = `SELECT * FROM USERS WHERE ID = :userId`;
+        let binds = {
+            userId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: userId },
+        };
+        let result = await databaseQuery(query, binds);
+
+        return res.status(200).json(result.rows);
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ errorMessage: err.message });
+    }
+}
+
+async function update_user_post(req, res, next) {
+    console.log("### update_user_post ###");
+
+    let userId = req.user.id;
+    let { name, email, phone, address, imageUrl } = req.body;
+
+    console.log(req.body);
+  
+    try {
+        let query = `UPDATE USERS SET NAME = :name, EMAIL = :email, PHONE = :phone, ADDRESS = :address, IMAGE_URL = :imageUrl WHERE ID = :userId`;
+        let binds = {
+            userId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: userId },
+            name: { dir: oracledb.BIND_IN, type: oracledb.STRING, val: name },
+            email: { dir: oracledb.BIND_IN, type: oracledb.STRING, val: email },
+            phone: { dir: oracledb.BIND_IN, type: oracledb.STRING, val: phone },
+            address: { dir: oracledb.BIND_IN, type: oracledb.STRING, val: address },
+            imageUrl: { dir: oracledb.BIND_IN, type: oracledb.STRING, val: imageUrl },
+        };
+        let result = await databaseQuery(query, binds);
+
+        if (result.rowsAffected == 0) return res.status(500).json({ errorMessage: "Error while updating user" });
+
+        return res.status(200).json({ message: "User updated successfully" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ errorMessage: err.message });
+    }
+}
+ 
+async function delete_user_post(req, res, next) {
+    let userId = req.user.id;
+    try {
+        let query = `DELETE FROM USERS WHERE ID = :userId`;
+        let binds = {
+            userId: { dir: oracledb.BIND_IN, type: oracledb.NUMBER, val: userId },
+        };
+        let result = await databaseQuery(query, binds);
+
+        if (result.rowsAffected === 0) return res.status(500).json({ errorMessage: "Error while deleting user" });
+
+        res.clearCookie("token");
+        res.clearCookie("userType");
+        return res.status(200).json({ message: "User deleted successfully" });
+    } catch (err) {
+        console.error(err);
+        res.status(500).json({ errorMessage: err.message });
+    }
+}
+
 module.exports = {
     get_all_orders,
     get_order_by_product_id,
@@ -406,4 +488,7 @@ module.exports = {
     get_wishlist_by_id,
     add_wishlist_post,
     remove_wishlist_post,
+    get_user_about,
+    update_user_post,
+    delete_user_post,
 };
