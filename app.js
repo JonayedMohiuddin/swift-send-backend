@@ -31,7 +31,7 @@ const app = express();
 // set cors
 const corsOptions = {
     origin: "http://localhost:5173", // Replace with your actual frontend domain
-    origin: "http://localhost:5174", // Replace with your actual frontend domain
+    // origin: "http://localhost:5174", // Replace with your actual frontend domain
     credentials: true, // Enable credentials (cookies, authorization headers)
 };
 app.use(cors(corsOptions));
