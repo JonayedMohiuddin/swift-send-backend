@@ -43,7 +43,7 @@ async function products(req, res, next) {
                         ${categorySearchCondition}
                         ${nameSearchCondition}
                         
-                        ORDER BY P.ID OFFSET ${page * product_per_page} ROWS FETCH NEXT ${product_per_page} ROWS ONLY
+                        ORDER BY RATING_COUNT DESC,RATING DESC, P.ID OFFSET ${page * product_per_page} ROWS FETCH NEXT ${product_per_page} ROWS ONLY
                     `;
 
         console.log("query:", query);
@@ -151,7 +151,7 @@ async function products_pages(req, res, next) {
         if (category && category != "all") categorySearchCondition = ` AND C.NAME = '${category}' `;
         if (search) nameSearchCondition = ` AND UPPER(P.NAME) LIKE UPPER('%${search}%') `;
 
-        let query = ` SELECT COUNT(*) AS COUNT
+        let query = `   SELECT COUNT(*) AS COUNT
                         FROM PRODUCT P 
                         LEFT JOIN CATEGORY C 
                         ON P.CATEGORY_ID = C.ID

@@ -92,7 +92,7 @@ async function add_product_post(req, res, next) {
             return res.status(400).json({ errorMessage: "Category does not exist" });
         }
 
-        query = `INSERT INTO PRODUCT (SUPPLIER_ID, CATEGORY_ID, NAME, PRICE, DESCRIPTION, IMAGE_URL, DISCOUNT, RATING_COUNT, TOTAL_RATING) VALUES (${supplier.id}, ${categoryId}, '${name}', ${price}, '${description}', '${imageUrl}', ${discount}, 0, 0)`;
+        query = `INSERT INTO PRODUCT (SUPPLIER_ID, CATEGORY_ID, NAME, PRICE, DESCRIPTION, IMAGE_URL, DISCOUNT) VALUES (${supplier.id}, ${categoryId}, '${name}', ${price}, '${description}', '${imageUrl}', ${discount})`;
         result = await databaseQuery(query);
         res.status(201).json({ message: "Product added successfully" });
     } catch (error) {
@@ -155,33 +155,68 @@ async function remove_product_post(req, res, next) {
   "description": "",
   "imageUrl": ""
   */
+
+  /*
+
+CREATE OR REPLACE PROCEDURE ADD_PRODUCT (SUPPLIER_ID_PARAM IN NUMBER, CATEGORY_ID_PARAM IN NUMBER, NAME_PARAM IN VARCHAR2, PRICE_PARAM IN NUMBER, DESCRIPTION_PARAM IN VARCHAR2, IMAGE_URL_PARAM IN VARCHAR2, DISCOUNT_PARAM IN NUMBER) IS
+    PRODUCT_ID_VALUE NUMBER;
+    CATEGORY_ID_VALUE NUMBER;
+BEGIN
+    -- CHECK IF PRODUCT EXISTS
+    SELECT ID INTO PRODUCT_ID_VALUE FROM PRODUCT WHERE NAME = NAME_PARAM AND SUPPLIER_ID = SUPPLIER_ID_PARAM;
+    
+    IF PRODUCT_ID_VALUE IS NOT NULL THEN
+        RAISE_APPLICATION_ERROR(-20001, 'PRODUCT ALREADY EXISTS');
+    END IF;
+
+    -- CHECK IF CATEGORY EXISTS
+    SELECT ID INTO CATEGORY_ID_VALUE FROM CATEGORY WHERE ID = CATEGORY_ID_PARAM;
+
+    IF CATEGORY_ID_VALUE IS NULL THEN
+        RAISE_APPLICATION_ERROR(-20001, 'CATEGORY DOES NOT EXIST');
+    END IF;
+
+    INSERT INTO PRODUCT(SUPPLIER_ID, CATEGORY_ID, NAME, PRICE, DESCRIPTION, IMAGE_URL, DISCOUNT) VALUES(SUPPLIER_ID_PARAM, CATEGORY_ID_PARAM, NAME_PARAM, PRICE_PARAM, DESCRIPTION_PARAM, IMAGE_URL_PARAM, DISCOUNT_PARAM);
+EXCEPTION
+    WHEN NO_DATA_FOUND THEN
+        RAISE_APPLICATION_ERROR(-20001, 'PRODUCT OR CATEGORY NOT FOUND');
+    WHEN OTHERS THEN
+        RAISE;
+END;
+/
+*/
 async function update_product_post(req, res, next) {
     const { productId, categoryId, name, price, description, imageUrl, discount } = req.body;
 
     try {
         // check if the product exists already
-        let query = `SELECT * FROM PRODUCT WHERE ID = ${productId}`;
-        let result = await databaseQuery(query);
-        if (result.rows.length === 0) {
-            return res.status(400).json({ errorMessage: "Product does not exist" });
-        } else if (result.rows[0].SUPPLIER_ID !== req.user.id) {
-            return res.status(400).json({ errorMessage: "You are not authorized to update this product" });
-        }
+        // let query = `SELECT * FROM PRODUCT WHERE ID = ${productId}`;
+        // let result = await databaseQuery(query);
+        // if (result.rows.length === 0) {
+        //     return res.status(400).json({ errorMessage: "Product does not exist" });
+        // } else if (result.rows[0].SUPPLIER_ID !== req.user.id) {
+        //     return res.status(400).json({ errorMessage: "You are not authorized to update this product" });
+        // }
 
-        // check if category exists
-        query = `SELECT * FROM CATEGORY WHERE ID = ${categoryId}`;
-        result = await databaseQuery(query);
-        if (result.rows.length === 0) {
-            return res.status(400).json({ errorMessage: "Category does not exist" });
-        }
+        // // check if category exists
+        // query = `SELECT * FROM CATEGORY WHERE ID = ${categoryId}`;
+        // result = await databaseQuery(query);
+        // if (result.rows.length === 0) {
+        //     return res.status(400).json({ errorMessage: "Category does not exist" });
+        // }
 
-        if (price < 0 || discount < 0 || discount >= 1) {
-            return res.status(400).json({ errorMessage: "Price or discount cannot be negative" });
-        }
+        // if (price < 0 || discount < 0 || discount >= 1) {
+        //     return res.status(400).json({ errorMessage: "Price or discount cannot be negative" });
+        // }
 
-        query = `UPDATE PRODUCT SET CATEGORY_ID = ${categoryId}, NAME = '${name}', PRICE = ${price}, DESCRIPTION = '${description}', IMAGE_URL = '${imageUrl}', DISCOUNT = ${discount} WHERE ID = ${productId}`;
-        result = await databaseQuery(query);
-        res.status(200).json({ message: "Product updated successfully" });
+        // query = `UPDATE PRODUCT SET CATEGORY_ID = ${categoryId}, NAME = '${name}', PRICE = ${price}, DESCRIPTION = '${description}', IMAGE_URL = '${imageUrl}', DISCOUNT = ${discount} WHERE ID = ${productId}`;
+        // result = await databaseQuery(query);
+        // res.status(200).json({ message: "Product updated successfully" });
+
+        let query = `BEGIN ADD_PRODUCT(${req.user.id}, ${categoryId}, '${name}', ${price}, '${description}', '${imageUrl}', ${discount}); END;`;
+        let binds = {};
+        let result = await databaseQuery(query, binds);
+        res.status(200).json({ message: "Product added successfully" });
     } catch (error) {
         console.error("Error in update_product_post: ", error);
         res.status(500).json({ errorMessage: "Internal Server Error" });
